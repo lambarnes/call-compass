@@ -144,7 +144,7 @@ export const updateAfterCallOutput = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
-      .from("after_call_outputs").update(data.patch).eq("id", data.id).select().single();
+      .from("after_call_outputs").update(data.patch as never).eq("id", data.id).select().single();
     if (error) throw new Error(error.message);
     return row;
   });
