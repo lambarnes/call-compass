@@ -16,8 +16,8 @@ export const Route = createFileRoute("/_authenticated/calls/new")({
 
 const CALL_TYPES = ["Discovery", "Diagnostic", "Pitch / proposal", "Working session", "Check-in", "Renewal", "Other"];
 const DEAL_STAGES = ["First conversation", "Active eval", "Proposal", "Negotiation", "Closed-won", "Closed-lost", "N/A"];
-const AUTHORITY = ["Decision maker", "Strong influencer", "Researcher only", "Unknown"];
-const BUDGET = ["Budget confirmed", "Budget likely", "No budget defined", "Unknown"];
+const AUTHORITY = ["Confirmed", "Unclear", "Not Decision Maker", "Multiple Stakeholders"];
+const BUDGET = ["Confirmed", "Range Mentioned", "Unclear", "No Budget", "Avoided"];
 
 function NewCallBrief() {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ function NewCallBrief() {
     call_type: "Discovery", call_datetime: "", meeting_objective: "",
     business_context: "", what_i_need_to_learn: "", planned_questions: "",
     known_concerns: "", risks_to_watch: "", desired_outcome: "",
-    deal_stage: "First conversation", authority_status: "Unknown", budget_status: "Unknown", notes: "",
+    deal_stage: "First conversation", authority_status: "Unclear", budget_status: "Unclear", notes: "",
   });
 
   function set<K extends keyof CallBriefInput>(k: K, v: CallBriefInput[K]) {
