@@ -13,9 +13,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ChevronDown, AlertCircle, Video } from "lucide-react";
 import { toast } from "sonner";
 import { ArrowLeft, FileText, Save, Sparkles } from "lucide-react";
+
 
 const callQ = (fn: any, id: string) =>
   queryOptions({ queryKey: ["call", id], queryFn: () => fn({ data: { id } }) });
