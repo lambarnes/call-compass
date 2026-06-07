@@ -13,9 +13,9 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Copy, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
-const callQ = (fn: typeof getCall, id: string) =>
+const callQ = (fn: any, id: string) =>
   queryOptions({ queryKey: ["call", id], queryFn: () => fn({ data: { id } }) });
-const outputQ = (fn: typeof getAfterCallOutput, id: string) =>
+const outputQ = (fn: any, id: string) =>
   queryOptions({ queryKey: ["after_call", id], queryFn: () => fn({ data: { callId: id } }) });
 
 export const Route = createFileRoute("/_authenticated/calls/$id/summary")({

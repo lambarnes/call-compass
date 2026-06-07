@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Radar, FileText, Clock } from "lucide-react";
 import { queryOptions } from "@tanstack/react-query";
 
-const callsQueryOptions = (fetchFn: typeof listCalls) =>
+const callsQueryOptions = (fetchFn: any) =>
   queryOptions({ queryKey: ["calls"], queryFn: () => fetchFn() });
 
 export const Route = createFileRoute("/_authenticated/dashboard")({

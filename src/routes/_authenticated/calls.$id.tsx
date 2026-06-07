@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Radar, FileText, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-const callQueryOptions = (fetchFn: typeof getCall, id: string) =>
+const callQueryOptions = (fetchFn: any, id: string) =>
   queryOptions({ queryKey: ["call", id], queryFn: () => fetchFn({ data: { id } }) });
 
 export const Route = createFileRoute("/_authenticated/calls/$id")({

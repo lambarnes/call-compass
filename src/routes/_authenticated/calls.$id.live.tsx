@@ -15,11 +15,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { ArrowLeft, FileText, Save, Sparkles } from "lucide-react";
 
-const callQ = (fn: typeof getCall, id: string) =>
+const callQ = (fn: any, id: string) =>
   queryOptions({ queryKey: ["call", id], queryFn: () => fn({ data: { id } }) });
-const insightsQ = (fn: typeof listLiveInsights, id: string) =>
+const insightsQ = (fn: any, id: string) =>
   queryOptions({ queryKey: ["insights", id], queryFn: () => fn({ data: { callId: id } }) });
-const chunksQ = (fn: typeof listTranscriptChunks, id: string) =>
+const chunksQ = (fn: any, id: string) =>
   queryOptions({ queryKey: ["chunks", id], queryFn: () => fn({ data: { callId: id } }) });
 
 export const Route = createFileRoute("/_authenticated/calls/$id/live")({

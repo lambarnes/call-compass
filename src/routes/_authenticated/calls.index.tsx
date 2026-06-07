@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 
-const callsQueryOptions = (fetchFn: typeof listCalls) =>
+const callsQueryOptions = (fetchFn: any) =>
   queryOptions({ queryKey: ["calls"], queryFn: () => fetchFn() });
 
 export const Route = createFileRoute("/_authenticated/calls/")({

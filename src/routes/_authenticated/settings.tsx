@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-const profileQ = (fn: typeof getProfile) =>
+const profileQ = (fn: any) =>
   queryOptions({ queryKey: ["profile"], queryFn: () => fn() });
 
 export const Route = createFileRoute("/_authenticated/settings")({
