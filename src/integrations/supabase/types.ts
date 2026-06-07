@@ -14,7 +14,286 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      after_call_outputs: {
+        Row: {
+          call_id: string
+          client_provided_information: string | null
+          client_situation: string | null
+          created_at: string
+          decisions_made: string | null
+          diagnosed_root_issue: string | null
+          exclusions: string | null
+          follow_up_email_draft: string | null
+          id: string
+          key_risks_constraints: string | null
+          meeting_purpose: string | null
+          open_questions: string | null
+          potential_scope: string | null
+          recommended_next_step: string | null
+          stated_problem: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          call_id: string
+          client_provided_information?: string | null
+          client_situation?: string | null
+          created_at?: string
+          decisions_made?: string | null
+          diagnosed_root_issue?: string | null
+          exclusions?: string | null
+          follow_up_email_draft?: string | null
+          id?: string
+          key_risks_constraints?: string | null
+          meeting_purpose?: string | null
+          open_questions?: string | null
+          potential_scope?: string | null
+          recommended_next_step?: string | null
+          stated_problem?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          call_id?: string
+          client_provided_information?: string | null
+          client_situation?: string | null
+          created_at?: string
+          decisions_made?: string | null
+          diagnosed_root_issue?: string | null
+          exclusions?: string | null
+          follow_up_email_draft?: string | null
+          id?: string
+          key_risks_constraints?: string | null
+          meeting_purpose?: string | null
+          open_questions?: string | null
+          potential_scope?: string | null
+          recommended_next_step?: string | null
+          stated_problem?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "after_call_outputs_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: true
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calls: {
+        Row: {
+          authority_status: string | null
+          budget_status: string | null
+          business_context: string | null
+          call_datetime: string | null
+          call_type: string | null
+          company_name: string | null
+          contact_name: string | null
+          contact_role: string | null
+          created_at: string
+          deal_stage: string | null
+          desired_outcome: string | null
+          id: string
+          known_concerns: string | null
+          meeting_objective: string | null
+          notes: string | null
+          planned_questions: string | null
+          risks_to_watch: string | null
+          status: Database["public"]["Enums"]["call_status"]
+          title: string
+          transcript_session_text: string | null
+          updated_at: string
+          user_id: string
+          what_i_need_to_learn: string | null
+        }
+        Insert: {
+          authority_status?: string | null
+          budget_status?: string | null
+          business_context?: string | null
+          call_datetime?: string | null
+          call_type?: string | null
+          company_name?: string | null
+          contact_name?: string | null
+          contact_role?: string | null
+          created_at?: string
+          deal_stage?: string | null
+          desired_outcome?: string | null
+          id?: string
+          known_concerns?: string | null
+          meeting_objective?: string | null
+          notes?: string | null
+          planned_questions?: string | null
+          risks_to_watch?: string | null
+          status?: Database["public"]["Enums"]["call_status"]
+          title: string
+          transcript_session_text?: string | null
+          updated_at?: string
+          user_id: string
+          what_i_need_to_learn?: string | null
+        }
+        Update: {
+          authority_status?: string | null
+          budget_status?: string | null
+          business_context?: string | null
+          call_datetime?: string | null
+          call_type?: string | null
+          company_name?: string | null
+          contact_name?: string | null
+          contact_role?: string | null
+          created_at?: string
+          deal_stage?: string | null
+          desired_outcome?: string | null
+          id?: string
+          known_concerns?: string | null
+          meeting_objective?: string | null
+          notes?: string | null
+          planned_questions?: string | null
+          risks_to_watch?: string | null
+          status?: Database["public"]["Enums"]["call_status"]
+          title?: string
+          transcript_session_text?: string | null
+          updated_at?: string
+          user_id?: string
+          what_i_need_to_learn?: string | null
+        }
+        Relationships: []
+      }
+      live_insights: {
+        Row: {
+          action_button: string
+          call_id: string
+          created_at: string
+          emotional_signal: string | null
+          hidden_risk: string | null
+          id: string
+          likely_true_intent: string | null
+          question_to_avoid: string | null
+          recommended_next_move: string | null
+          recommended_question: string | null
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          sequence_number: number
+          signal_type: string | null
+          transcript_chunk_id: string | null
+          user_id: string
+          what_im_hearing: string | null
+        }
+        Insert: {
+          action_button: string
+          call_id: string
+          created_at?: string
+          emotional_signal?: string | null
+          hidden_risk?: string | null
+          id?: string
+          likely_true_intent?: string | null
+          question_to_avoid?: string | null
+          recommended_next_move?: string | null
+          recommended_question?: string | null
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          sequence_number: number
+          signal_type?: string | null
+          transcript_chunk_id?: string | null
+          user_id: string
+          what_im_hearing?: string | null
+        }
+        Update: {
+          action_button?: string
+          call_id?: string
+          created_at?: string
+          emotional_signal?: string | null
+          hidden_risk?: string | null
+          id?: string
+          likely_true_intent?: string | null
+          question_to_avoid?: string | null
+          recommended_next_move?: string | null
+          recommended_question?: string | null
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          sequence_number?: number
+          signal_type?: string | null
+          transcript_chunk_id?: string | null
+          user_id?: string
+          what_im_hearing?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_insights_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_insights_transcript_chunk_id_fkey"
+            columns: ["transcript_chunk_id"]
+            isOneToOne: false
+            referencedRelation: "transcript_chunks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transcript_chunks: {
+        Row: {
+          call_id: string
+          created_at: string
+          id: string
+          source: Database["public"]["Enums"]["transcript_source"]
+          transcript_text: string
+          user_id: string
+        }
+        Insert: {
+          call_id: string
+          created_at?: string
+          id?: string
+          source?: Database["public"]["Enums"]["transcript_source"]
+          transcript_text: string
+          user_id: string
+        }
+        Update: {
+          call_id?: string
+          created_at?: string
+          id?: string
+          source?: Database["public"]["Enums"]["transcript_source"]
+          transcript_text?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transcript_chunks_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +302,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      call_status: "draft" | "ready" | "live" | "completed" | "follow_up_done"
+      risk_level: "green" | "yellow" | "red"
+      transcript_source: "manual" | "zoom_transcript_future"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +431,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      call_status: ["draft", "ready", "live", "completed", "follow_up_done"],
+      risk_level: ["green", "yellow", "red"],
+      transcript_source: ["manual", "zoom_transcript_future"],
+    },
   },
 } as const
