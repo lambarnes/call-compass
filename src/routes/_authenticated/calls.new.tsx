@@ -23,7 +23,9 @@ function NewCallBrief() {
   const navigate = useNavigate();
   const create = useServerFn(createCall);
   const [loading, setLoading] = useState(false);
+  const [meetingUrl, setMeetingUrl] = useState("");
   const [form, setForm] = useState<CallBriefInput>({
+
     title: "", company_name: "", contact_name: "", contact_role: "",
     call_type: "Discovery", call_datetime: "", meeting_objective: "",
     business_context: "", what_i_need_to_learn: "", planned_questions: "",
