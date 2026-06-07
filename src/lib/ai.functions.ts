@@ -86,7 +86,7 @@ function mockInsight(action: string, transcriptText: string) {
     case "Is this a risk signal?": {
       return {
         signal_type: "Risk signal",
-        risk_level: "red",
+        risk_level: "red" as Risk,
         what_im_hearing: `Specific risk surfacing in ${snippet} — hedged language and references to "the team" / "process" / "later" without names or dates.`,
         likely_true_intent: "They're flagging a blocker without naming it. Your job is to name it for them.",
         emotional_signal: "Cautious, protective — they've seen this go wrong before.",
