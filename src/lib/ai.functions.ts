@@ -232,7 +232,7 @@ export const generateLiveInsight = createServerFn({ method: "POST" })
       callId: z.string().uuid(),
       actionButton: z.enum(ACTION_BUTTONS),
       transcriptChunkId: z.string().uuid().nullable().optional(),
-    }).parse(d)
+    }).parse({ ...d, actionButton: normalizeActionButton(d.actionButton) })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
