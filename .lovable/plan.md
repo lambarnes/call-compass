@@ -1,94 +1,53 @@
+## Zoom Integration — UI Shell Only
 
-# Live Radar → Executive Discovery Cockpit (UI/IA Only)
+Build a non-functional UI scaffold for future Zoom integration. No OAuth, no API calls, no SDKs, no token storage.
 
-Scope: presentation-only refactor of the right panel in `src/routes/_authenticated/calls.$id.live.tsx`. No backend, schema, AI logic, Supabase, or route changes. The 8 action buttons keep their existing `actionButton` values (untouched), only their visual grouping changes.
+### Scope
 
-## Proposed Layout
+Pure frontend presentational shell. State held in local component state only (no persistence, no schema changes). All Zoom controls are visibly marked as "Coming Soon" / disabled where they would otherwise trigger real calls.
 
-Three-column shell stays the same (Brief | Transcript | Cockpit). The Cockpit column is restructured into 4 stacked zones:
+### Files changed
 
-```text
-┌─────────────────────────────────────────┐
-│ ZONE 1 — Call Status Card  (sticky top) │
-│  Discovery Stage  ● Yellow              │
-│  Primary Constraint: Ownership          │
-│  Recommended Move:  Continue Discovery  │
-│  Confidence: 82%                        │
-├─────────────────────────────────────────┤
-│ ZONE 2 — Action Buttons (4 groups, 2x)  │
-│  Understanding | Discovery              │
-│  Qualification | Control                │
-├─────────────────────────────────────────┤
-│ ZONE 3 — Latest Insight (hero card)     │
-│  What I'm Hearing       (large)         │
-│  Hidden Risk            (large)         │
-│  Recommended Move       (pill)          │
-│  Recommended Question   (large)         │
-│  ▸ Evidence & analysis  (collapsed)     │
-├─────────────────────────────────────────┤
-│ ZONE 4 — ▸ Insight History (collapsed)  │
-│  Timeline of prior insights, condensed  │
-└─────────────────────────────────────────┘
-```
+1. **`src/routes/_authenticated/settings.tsx`** (edit)
+   - Add a new `Card` section: **"Zoom Integration"**
+   - Contains:
+     - Status badge: `Not Connected` (default) — variants prepared for `Connected` / `Error` but hardcoded to `Not Connected` for now
+     - **Connect Zoom** button — `disabled`, with tooltip/helper text "Coming soon"
+     - Helper copy explaining future capability
+     - Error message area (`Alert` variant=destructive) — hidden by default, rendered only when local `error` state is set (no triggers wired yet)
 
-### Zone 1 — Call Status Card (always visible, sticky)
-Derived purely on the client from the most recent insight + brief context (no new fields):
-- **Discovery Stage**: Green / Yellow / Red — mapped from latest insight's `risk_level`.
-- **Primary Constraint**: short label from latest `hidden_risk` (truncated, first clause).
-- **Recommended Move**: latest `recommended_next_move` rendered as a pill.
-- **Confidence**: same deterministic % already shown today.
-- Empty state before first insight: "Awaiting first signal — choose a lens below."
+2. **`src/routes/_authenticated/calls.new.tsx`** (edit)
+   - Add **Meeting URL** input (optional) inside the existing "The call" card
+   - Stored in local form state only; **not** sent to `createCall` (no schema change). Field is purely visual scaffolding; will be wired later when schema/metadata column is added.
 
-### Zone 2 — Grouped Action Buttons
-Same 8 buttons, same `runAction(...)` values. Visual grouping only, via 4 small labeled clusters in a 2×2 grid:
-- **Understanding**: What are they really saying? · What emotion or hesitation is showing?
-- **Discovery**: What should I ask now? · Should I probe, pause, or close?
-- **Qualification**: Is this a buying signal? · Is this a risk signal?
-- **Control**: Am I moving too fast? · What should I avoid saying?
+3. **`src/routes/_authenticated/calls.$id.live.tsx`** (edit)
+   - Add a small **"Transcript Source"** selector above the existing transcript textarea:
+     - `Manual Transcript` (selected, only working option)
+     - `Zoom Transcript (Coming Soon)` (disabled `SelectItem`)
+   - Add a collapsed **"Live Zoom Transcript"** placeholder panel — shown only when Zoom source is selected (which is disabled), so effectively a static empty-state card with copy: *"Zoom live transcript will stream here once connected."*
+   - Add a hidden `Alert` slot for future Zoom connection errors (rendered only if local `zoomError` state set; no triggers).
+   - **Do not touch** any AI button logic, insight rendering, Cockpit zones, server functions, or transcript-driven AI flow.
 
-Group headers are 10px uppercase muted labels; buttons remain compact `outline` size-sm.
+### Schema changes
 
-The center column's existing "Analyze Current Moment" sparkles button stays as-is (it routes through the legacy normalizer server-side).
+**None.** Meeting URL is local-only state. No new columns, no new tables, no migration. Connection status is hardcoded `Not Connected` (no `zoom_connections` table yet).
 
-### Zone 3 — Latest Insight (hero card)
-Renders only the most recent insight, with 4 prominent fields:
-1. What I'm Hearing
-2. Hidden Risk
-3. Recommended Move (pill)
-4. Recommended Question
+### UI changes
 
-Typography is bumped up vs. today (text-sm → text-base for values; labels stay micro-caps). Risk badge + lens name move to a compact header strip.
+- Settings page: +1 card (Zoom Integration) with disabled Connect button + status badge + error slot.
+- New Call Brief: +1 optional "Meeting URL" input (no backend effect).
+- Live Radar: +1 Transcript Source selector, +1 placeholder Zoom stream panel, +1 error slot.
 
-A single `<Collapsible>` "Evidence & analysis" at the bottom of the card holds:
-- Transcript Evidence (existing quoted chunk)
-- Signal Type (if present on the insight)
-- Risk Level (full label, not just badge)
-- Any additional analysis fields the schema already returns
+### Out of scope (explicit)
 
-### Zone 4 — Insight History (collapsed by default)
-A single `<Collapsible>` "Previous insights (N)" that expands into a condensed vertical timeline:
-- One row per prior insight: `#003 · LENS · risk dot · Recommended Move (truncated)`
-- Click a row to expand inline into the same 4-field mini layout (reusing Zone 3's renderer in compact mode).
-- Latest insight is excluded from this list (it lives in Zone 3).
+- No `@zoom/*` SDK install
+- No OAuth route, callback, or redirect handler
+- No server function for Zoom
+- No secret added (no `ZOOM_CLIENT_ID` etc.)
+- No `fetch` to `zoom.us`
+- No new DB column or migration
+- No change to existing AI / insight / Cockpit behavior
 
-## Design Principles Applied
-- Recommendation-first: Zone 1 + Zone 3 surface decisions before explanations.
-- Progressive disclosure: evidence + signal metadata behind one click; history behind another.
-- One-screen cockpit: Zones 1–3 fit above the fold on a 1080p laptop; only history requires expand.
-- No new colors — reuses existing `risk-red/yellow/green` tokens and `primary` pill style.
+### Confirmation
 
-## Files That Would Change
-- `src/routes/_authenticated/calls.$id.live.tsx` — restructure right column into the 4 zones, add Zone 1 status card, regroup buttons, collapse evidence + history.
-- (Optional, only if the cockpit file grows past ~350 lines) extract presentational helpers into:
-  - `src/components/live/CallStatusCard.tsx`
-  - `src/components/live/LatestInsightCard.tsx`
-  - `src/components/live/InsightHistory.tsx`
-  - `src/components/live/ActionButtonGroups.tsx`
-
-No other files touched. No new dependencies (uses existing `Collapsible`, `Card`, `Badge`, `Button`, `ScrollArea`, lucide icons).
-
-## Out of Scope (explicit)
-- No changes to `src/lib/ai.functions.ts`, server functions, Zod enums, or DB.
-- No new insight fields; Zone 1 is computed from existing fields on the client.
-- No route, auth, or schema changes.
-- No mockup screenshots in this plan — visual rendering will come during implementation. If you want rendered design directions first, say the word and I'll generate 3 cockpit variants before building.
+No real Zoom API calls, SDK imports, OAuth flows, or token storage will be added in this pass. Everything is static UI + local React state.

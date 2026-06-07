@@ -23,7 +23,9 @@ function NewCallBrief() {
   const navigate = useNavigate();
   const create = useServerFn(createCall);
   const [loading, setLoading] = useState(false);
+  const [meetingUrl, setMeetingUrl] = useState("");
   const [form, setForm] = useState<CallBriefInput>({
+
     title: "", company_name: "", contact_name: "", contact_role: "",
     call_type: "Discovery", call_datetime: "", meeting_objective: "",
     business_context: "", what_i_need_to_learn: "", planned_questions: "",
@@ -74,6 +76,16 @@ function NewCallBrief() {
               </Select>
             </div>
             <div className="space-y-1.5 md:col-span-2"><Label>Date & time</Label><Input type="datetime-local" value={form.call_datetime ?? ""} onChange={(e) => set("call_datetime", e.target.value)} /></div>
+            <div className="space-y-1.5 md:col-span-2">
+              <Label>Meeting URL <span className="text-xs text-muted-foreground font-normal">(optional — Zoom integration coming soon)</span></Label>
+              <Input
+                type="url"
+                value={meetingUrl}
+                onChange={(e) => setMeetingUrl(e.target.value)}
+                placeholder="https://zoom.us/j/..."
+              />
+            </div>
+
           </div>
         </Card>
 
