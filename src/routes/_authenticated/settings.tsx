@@ -86,3 +86,52 @@ function Settings() {
     </div>
   );
 }
+
+type ZoomStatus = "not_connected" | "connected" | "error";
+
+function ZoomIntegrationCard() {
+  const [status] = useState<ZoomStatus>("not_connected");
+  const [error] = useState<string | null>(null);
+
+  const statusBadge =
+    status === "connected" ? (
+      <Badge variant="outline" className="border-risk-green/40 text-foreground bg-risk-green/15">Connected</Badge>
+    ) : status === "error" ? (
+      <Badge variant="outline" className="border-risk-red/40 text-foreground bg-risk-red/15">Error</Badge>
+    ) : (
+      <Badge variant="outline" className="text-muted-foreground">Not Connected</Badge>
+    );
+
+  return (
+    <Card className="p-6 space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Video className="h-4 w-4 text-muted-foreground" />
+          <h2 className="font-semibold">Zoom Integration</h2>
+        </div>
+        {statusBadge}
+      </div>
+      <p className="text-sm text-muted-foreground">
+        Connect your Zoom account to stream live meeting transcripts straight into the Radar. Coming soon — the UI is in place while the integration is being built.
+      </p>
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-xs text-muted-foreground">No data is sent to Zoom yet.</span>
+        <Button
+          variant="outline"
+          disabled
+          onClick={() => toast.info("Zoom integration coming soon.")}
+        >
+          <Video className="h-4 w-4" /> Connect Zoom
+        </Button>
+      </div>
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Zoom connection error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+    </Card>
+  );
+}
+
