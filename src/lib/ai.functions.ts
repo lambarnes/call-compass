@@ -5,14 +5,14 @@ import { z } from "zod";
 // ============ Mock insight generator ============
 
 const ACTION_BUTTONS = [
-  "Analyze Current Moment",
-  "What Are They Really Saying?",
-  "Detect Buying Signal vs Stall",
-  "Suggest A Smarter Question",
-  "Risk / Red Flag Check",
-  "Authority & Decision Check",
-  "Reframe My Pitch",
-  "Suggest Next Best Move",
+  "What are they really saying?",
+  "What should I ask now?",
+  "What emotion or hesitation is showing?",
+  "Is this a buying signal?",
+  "Is this a risk signal?",
+  "Am I moving too fast?",
+  "Should I probe, pause, or close?",
+  "What should I avoid saying?",
 ] as const;
 
 type Risk = "green" | "yellow" | "red";
