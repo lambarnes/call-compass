@@ -35,16 +35,31 @@ export const Route = createFileRoute("/_authenticated/calls/$id/live")({
   component: LiveRadar,
 });
 
-const ACTIONS = [
-  "What are they really saying?",
-  "What should I ask now?",
-  "What emotion or hesitation is showing?",
-  "Is this a buying signal?",
-  "Is this a risk signal?",
-  "Am I moving too fast?",
-  "Should I probe, pause, or close?",
-  "What should I avoid saying?",
+const ACTION_GROUPS: { label: string; actions: string[] }[] = [
+  { label: "Understanding", actions: ["What are they really saying?", "What emotion or hesitation is showing?"] },
+  { label: "Discovery", actions: ["What should I ask now?", "Should I probe, pause, or close?"] },
+  { label: "Qualification", actions: ["Is this a buying signal?", "Is this a risk signal?"] },
+  { label: "Control", actions: ["Am I moving too fast?", "What should I avoid saying?"] },
 ];
+
+function stageLabel(r: string) {
+  if (r === "red") return "Red";
+  if (r === "yellow") return "Yellow";
+  return "Green";
+}
+function stageDotClass(r: string) {
+  if (r === "red") return "bg-risk-red";
+  if (r === "yellow") return "bg-risk-yellow";
+  return "bg-risk-green";
+}
+function firstClause(s: string, max = 60) {
+  const clean = s.split(/[.;\n]/)[0].trim();
+  return clean.length > max ? clean.slice(0, max - 1) + "…" : clean;
+}
+function confidenceFor(id: string) {
+  const hash = String(id).split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  return 60 + (hash % 36);
+}
 
 function riskClass(r: string) {
   if (r === "red") return "bg-risk-red/15 text-foreground border-risk-red/40";
@@ -190,71 +205,44 @@ function LiveRadar() {
           )}
         </div>
 
-        {/* Right: insights + actions */}
+        {/* Right: cockpit */}
         <div className="flex flex-col min-h-0">
-          <div className="p-4 border-b border-border space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">AI Guidance</div>
-            <div className="grid grid-cols-2 gap-1.5">
-              {ACTIONS.map((a) => (
-                <Button key={a} variant="outline" size="sm" className="h-auto py-2 px-2 text-xs whitespace-normal text-left justify-start"
-                  onClick={() => runAction(a)} disabled={!!running}>
-                  {running === a ? "..." : a}
-                </Button>
-              ))}
-            </div>
-          </div>
           <ScrollArea className="flex-1">
-            <div className="p-4 space-y-3">
-              {insights.length === 0 && (
-                <div className="text-center text-xs text-muted-foreground py-8">
-                  Click an AI action to generate your first insight.
-                </div>
-              )}
-              {insights.map((i: any) => {
-                const chunkText = i.transcript_chunk_id
-                  ? chunks.find((c: any) => c.id === i.transcript_chunk_id)?.transcript_text
-                  : null;
-                const hash = String(i.id).split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-                const confidence = 60 + (hash % 36);
-                return (
-                  <Card key={i.id} className="p-3 space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="text-[10px] font-mono text-muted-foreground">#{String(i.sequence_number).padStart(3, "0")}</div>
-                      <Badge variant="outline" className={riskClass(i.risk_level)}>{i.risk_level.toUpperCase()}</Badge>
-                    </div>
-                    <div className="font-semibold text-sm">{i.action_button}</div>
+            <div className="p-4 space-y-4">
+              {/* ZONE 1 — Call Status */}
+              <CallStatusCard insights={insights} />
 
-                    {/* 5 executive fields only */}
-                    {i.what_im_hearing && <Insight label="What I'm Hearing" value={i.what_im_hearing} />}
-                    {i.hidden_risk && <Insight label="Hidden Risk" value={i.hidden_risk} />}
-                    {i.recommended_next_move && (
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommended Move</div>
-                        <span className="mt-0.5 inline-flex items-center rounded-full bg-primary/15 text-primary px-2 py-0.5 text-[11px] font-medium">
-                          {i.recommended_next_move}
-                        </span>
+              {/* ZONE 2 — Grouped action buttons */}
+              <div className="space-y-3">
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">AI Guidance</div>
+                <div className="grid grid-cols-2 gap-3">
+                  {ACTION_GROUPS.map((group) => (
+                    <div key={group.label} className="space-y-1.5">
+                      <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/80">{group.label}</div>
+                      <div className="space-y-1.5">
+                        {group.actions.map((a) => (
+                          <Button
+                            key={a}
+                            variant="outline"
+                            size="sm"
+                            className="w-full h-auto py-1.5 px-2 text-[11px] leading-tight whitespace-normal text-left justify-start"
+                            onClick={() => runAction(a)}
+                            disabled={!!running}
+                          >
+                            {running === a ? "..." : a}
+                          </Button>
+                        ))}
                       </div>
-                    )}
-                    {i.recommended_question && <Insight label="Recommended Question" value={i.recommended_question} />}
-                    <Insight label="Confidence" value={`${confidence}%`} />
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-                    {/* Transcript evidence — collapsed by default */}
-                    {chunkText && (
-                      <Collapsible>
-                        <CollapsibleTrigger className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
-                          <ChevronDown className="h-3 w-3 transition-transform" />
-                          Transcript evidence
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <blockquote className="mt-1 text-xs border-l-2 border-primary/40 pl-2 italic text-foreground/90 whitespace-pre-wrap">
-                            "{chunkText}"
-                          </blockquote>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    )}
-                  </Card>
-                );
-              })}
+              {/* ZONE 3 — Latest insight (hero) */}
+              <LatestInsightCard insights={insights} chunks={chunks} />
+
+              {/* ZONE 4 — Insight history */}
+              <InsightHistory insights={insights} chunks={chunks} />
             </div>
           </ScrollArea>
         </div>
@@ -263,11 +251,166 @@ function LiveRadar() {
   );
 }
 
-function Insight({ label, value }: { label: string; value: string }) {
+function FieldBlock({ label, value, large = false }: { label: string; value: string; large?: boolean }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className="text-xs mt-0.5">{value}</div>
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={`mt-1 whitespace-pre-wrap ${large ? "text-sm leading-snug" : "text-xs"}`}>{value}</div>
     </div>
+  );
+}
+
+function CallStatusCard({ insights }: { insights: any[] }) {
+  const latest = insights[insights.length - 1];
+  if (!latest) {
+    return (
+      <Card className="p-4 border-dashed">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Call Status</div>
+        <div className="mt-2 text-xs text-muted-foreground">Awaiting first signal — choose a lens below.</div>
+      </Card>
+    );
+  }
+  const stage = stageLabel(latest.risk_level);
+  const constraint = latest.hidden_risk ? firstClause(latest.hidden_risk) : "—";
+  const move = latest.recommended_next_move ?? "—";
+  const confidence = confidenceFor(latest.id);
+  return (
+    <Card className="p-4 space-y-3 border-primary/20">
+      <div className="flex items-center justify-between">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Call Status</div>
+        <div className="text-[10px] font-mono text-muted-foreground">#{String(latest.sequence_number).padStart(3, "0")}</div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Discovery Stage</div>
+          <div className="mt-1 flex items-center gap-1.5">
+            <span className={`h-2 w-2 rounded-full ${stageDotClass(latest.risk_level)}`} />
+            <span className="text-sm font-semibold">{stage}</span>
+          </div>
+        </div>
+        <div>
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Confidence</div>
+          <div className="mt-1 text-sm font-semibold">{confidence}%</div>
+        </div>
+        <div className="col-span-2">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Primary Constraint</div>
+          <div className="mt-1 text-sm">{constraint}</div>
+        </div>
+        <div className="col-span-2">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommended Move</div>
+          <span className="mt-1 inline-flex items-center rounded-full bg-primary/15 text-primary px-2.5 py-0.5 text-xs font-medium">
+            {move}
+          </span>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function LatestInsightCard({ insights, chunks }: { insights: any[]; chunks: any[] }) {
+  const latest = insights[insights.length - 1];
+  if (!latest) return null;
+  const chunkText = latest.transcript_chunk_id
+    ? chunks.find((c: any) => c.id === latest.transcript_chunk_id)?.transcript_text
+    : null;
+  return (
+    <Card className="p-4 space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <div className="font-semibold text-sm">{latest.action_button}</div>
+        <Badge variant="outline" className={riskClass(latest.risk_level)}>{latest.risk_level.toUpperCase()}</Badge>
+      </div>
+      <div className="space-y-3">
+        {latest.what_im_hearing && <FieldBlock label="What I'm Hearing" value={latest.what_im_hearing} large />}
+        {latest.hidden_risk && <FieldBlock label="Hidden Risk" value={latest.hidden_risk} large />}
+        {latest.recommended_next_move && (
+          <div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Recommended Move</div>
+            <span className="mt-1 inline-flex items-center rounded-full bg-primary/15 text-primary px-2.5 py-1 text-sm font-medium">
+              {latest.recommended_next_move}
+            </span>
+          </div>
+        )}
+        {latest.recommended_question && <FieldBlock label="Recommended Question" value={latest.recommended_question} large />}
+      </div>
+
+      <Collapsible>
+        <CollapsibleTrigger className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180 pt-1">
+          <ChevronDown className="h-3 w-3 transition-transform" />
+          Evidence &amp; analysis
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="mt-2 space-y-2 border-t border-border pt-2">
+            {chunkText && (
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Transcript Evidence</div>
+                <blockquote className="mt-1 text-xs border-l-2 border-primary/40 pl-2 italic text-foreground/90 whitespace-pre-wrap">
+                  "{chunkText}"
+                </blockquote>
+              </div>
+            )}
+            {latest.signal_type && <FieldBlock label="Signal Type" value={latest.signal_type} />}
+            <FieldBlock label="Risk Level" value={stageLabel(latest.risk_level)} />
+            {latest.emotional_signal && <FieldBlock label="Emotional Signal" value={latest.emotional_signal} />}
+            {latest.likely_intent && <FieldBlock label="Likely Intent" value={latest.likely_intent} />}
+            {latest.question_to_avoid && <FieldBlock label="Question To Avoid" value={latest.question_to_avoid} />}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
+  );
+}
+
+function InsightHistory({ insights, chunks }: { insights: any[]; chunks: any[] }) {
+  const prior = insights.slice(0, -1).reverse();
+  if (prior.length === 0) return null;
+  return (
+    <Collapsible>
+      <CollapsibleTrigger className="w-full flex items-center justify-between gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180 px-1 py-2 border-t border-border">
+        <span>Previous insights ({prior.length})</span>
+        <ChevronDown className="h-3 w-3 transition-transform" />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="mt-2 space-y-2">
+          {prior.map((i: any) => (
+            <HistoryRow key={i.id} insight={i} chunks={chunks} />
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function HistoryRow({ insight, chunks }: { insight: any; chunks: any[] }) {
+  const [open, setOpen] = useState(false);
+  const chunkText = insight.transcript_chunk_id
+    ? chunks.find((c: any) => c.id === insight.transcript_chunk_id)?.transcript_text
+    : null;
+  return (
+    <Card className="p-2.5">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center gap-2 text-left text-xs"
+      >
+        <span className="text-[10px] font-mono text-muted-foreground">#{String(insight.sequence_number).padStart(3, "0")}</span>
+        <span className={`h-2 w-2 rounded-full shrink-0 ${stageDotClass(insight.risk_level)}`} />
+        <span className="font-medium truncate flex-1">{insight.action_button}</span>
+        {insight.recommended_next_move && (
+          <span className="text-[10px] text-muted-foreground truncate max-w-[40%]">{insight.recommended_next_move}</span>
+        )}
+        <ChevronDown className={`h-3 w-3 transition-transform shrink-0 ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="mt-2 pt-2 border-t border-border space-y-2">
+          {insight.what_im_hearing && <FieldBlock label="What I'm Hearing" value={insight.what_im_hearing} />}
+          {insight.hidden_risk && <FieldBlock label="Hidden Risk" value={insight.hidden_risk} />}
+          {insight.recommended_question && <FieldBlock label="Recommended Question" value={insight.recommended_question} />}
+          {chunkText && (
+            <blockquote className="text-xs border-l-2 border-primary/40 pl-2 italic text-foreground/80 whitespace-pre-wrap">
+              "{chunkText}"
+            </blockquote>
+          )}
+        </div>
+      )}
+    </Card>
   );
 }
