@@ -184,7 +184,7 @@ function mockInsight(action: string, transcriptText: string) {
       ).sort((a, b) => score(a[1]) - score(b[1]))[0];
       return {
         signal_type: "Buying signal",
-        risk_level: overall === "Strong" ? "green" : overall === "Moderate" ? "yellow" : "red",
+        risk_level: (overall === "Strong" ? "green" : overall === "Moderate" ? "yellow" : "red") as Risk,
         what_im_hearing: `${overall} buying signal. Authority: ${authority}. Budget: ${budget}. Need: ${need}. Timing: ${timing}.`,
         likely_true_intent: `Weakest dimension is ${weakest[0]} (${weakest[1].toLowerCase()}). That is the dimension that will stall this deal, not price.`,
         emotional_signal: overall === "Strong" ? "Forward-leaning, time-aware" : "Interested but non-committal",
