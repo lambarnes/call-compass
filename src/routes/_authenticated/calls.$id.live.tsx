@@ -99,7 +99,10 @@ function LiveRadar() {
 
   const [text, setText] = useState(call.transcript_session_text ?? "");
   const [running, setRunning] = useState<string | null>(null);
+  const [transcriptSource, setTranscriptSource] = useState<"manual" | "zoom">("manual");
+  const [zoomError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
