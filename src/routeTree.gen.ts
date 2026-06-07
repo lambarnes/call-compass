@@ -18,6 +18,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCallsIndexRouteImport } from './routes/_authenticated/calls.index'
 import { Route as AuthenticatedCallsNewRouteImport } from './routes/_authenticated/calls.new'
 import { Route as AuthenticatedCallsIdRouteImport } from './routes/_authenticated/calls.$id'
+import { Route as AuthenticatedCallsIdIndexRouteImport } from './routes/_authenticated/calls.$id.index'
 import { Route as AuthenticatedCallsIdSummaryRouteImport } from './routes/_authenticated/calls.$id.summary'
 import { Route as AuthenticatedCallsIdLiveRouteImport } from './routes/_authenticated/calls.$id.live'
 
@@ -65,6 +66,12 @@ const AuthenticatedCallsIdRoute = AuthenticatedCallsIdRouteImport.update({
   path: '/calls/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCallsIdIndexRoute =
+  AuthenticatedCallsIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedCallsIdRoute,
+  } as any)
 const AuthenticatedCallsIdSummaryRoute =
   AuthenticatedCallsIdSummaryRouteImport.update({
     id: '/summary',
@@ -89,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/calls/': typeof AuthenticatedCallsIndexRoute
   '/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
   '/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
+  '/calls/$id/': typeof AuthenticatedCallsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -96,11 +104,11 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/calls/$id': typeof AuthenticatedCallsIdRouteWithChildren
   '/calls/new': typeof AuthenticatedCallsNewRoute
   '/calls': typeof AuthenticatedCallsIndexRoute
   '/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
   '/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
+  '/calls/$id': typeof AuthenticatedCallsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/_authenticated/calls/': typeof AuthenticatedCallsIndexRoute
   '/_authenticated/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
   '/_authenticated/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
+  '/_authenticated/calls/$id/': typeof AuthenticatedCallsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/calls/'
     | '/calls/$id/live'
     | '/calls/$id/summary'
+    | '/calls/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -136,11 +146,11 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/dashboard'
     | '/settings'
-    | '/calls/$id'
     | '/calls/new'
     | '/calls'
     | '/calls/$id/live'
     | '/calls/$id/summary'
+    | '/calls/$id'
   id:
     | '__root__'
     | '/'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/_authenticated/calls/'
     | '/_authenticated/calls/$id/live'
     | '/_authenticated/calls/$id/summary'
+    | '/_authenticated/calls/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -228,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCallsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/calls/$id/': {
+      id: '/_authenticated/calls/$id/'
+      path: '/'
+      fullPath: '/calls/$id/'
+      preLoaderRoute: typeof AuthenticatedCallsIdIndexRouteImport
+      parentRoute: typeof AuthenticatedCallsIdRoute
+    }
     '/_authenticated/calls/$id/summary': {
       id: '/_authenticated/calls/$id/summary'
       path: '/summary'
@@ -248,11 +266,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedCallsIdRouteChildren {
   AuthenticatedCallsIdLiveRoute: typeof AuthenticatedCallsIdLiveRoute
   AuthenticatedCallsIdSummaryRoute: typeof AuthenticatedCallsIdSummaryRoute
+  AuthenticatedCallsIdIndexRoute: typeof AuthenticatedCallsIdIndexRoute
 }
 
 const AuthenticatedCallsIdRouteChildren: AuthenticatedCallsIdRouteChildren = {
   AuthenticatedCallsIdLiveRoute: AuthenticatedCallsIdLiveRoute,
   AuthenticatedCallsIdSummaryRoute: AuthenticatedCallsIdSummaryRoute,
+  AuthenticatedCallsIdIndexRoute: AuthenticatedCallsIdIndexRoute,
 }
 
 const AuthenticatedCallsIdRouteWithChildren =
@@ -286,3 +306,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
