@@ -187,23 +187,55 @@ function LiveRadar() {
 
         {/* Center: transcript */}
         <div className="flex flex-col min-h-0 border-r border-border">
-          <div className="p-4 border-b border-border">
-            <div className="text-xs text-muted-foreground">Live transcript input — Zoom integration pending. Paste or type what you hear.</div>
+          <div className="p-4 border-b border-border space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Transcript Source</span>
+              <Select value={transcriptSource} onValueChange={(v) => setTranscriptSource(v as "manual" | "zoom")}>
+                <SelectTrigger className="h-7 w-[220px] text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="manual">Manual Transcript</SelectItem>
+                  <SelectItem value="zoom" disabled>Zoom Transcript (Coming Soon)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {transcriptSource === "manual"
+                ? "Live transcript input — paste or type what you hear."
+                : "Zoom live transcript will stream here once connected."}
+            </div>
+            {zoomError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Zoom connection error</AlertTitle>
+                <AlertDescription>{zoomError}</AlertDescription>
+              </Alert>
+            )}
           </div>
           <div className="flex-1 p-4 min-h-0">
-            <Textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Type or paste what the caller is saying..."
-              className="h-full resize-none bg-card/50 font-mono text-sm"
-            />
+            {transcriptSource === "zoom" ? (
+              <Card className="h-full flex flex-col items-center justify-center text-center p-6 border-dashed bg-card/30">
+                <Video className="h-8 w-8 text-muted-foreground mb-3" />
+                <div className="text-sm font-medium">Live Zoom Transcript</div>
+                <div className="mt-1 text-xs text-muted-foreground max-w-xs">
+                  Zoom integration is coming soon. Connect your Zoom account in Settings to stream live transcripts here.
+                </div>
+              </Card>
+            ) : (
+              <Textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Type or paste what the caller is saying..."
+                className="h-full resize-none bg-card/50 font-mono text-sm"
+              />
+            )}
           </div>
           <div className="p-4 border-t border-border flex gap-2">
-            <Button variant="outline" size="sm" onClick={saveSegment}><Save className="h-4 w-4" /> Save Transcript Segment</Button>
-            <Button size="sm" onClick={() => runAction("Analyze Current Moment")} disabled={!!running}>
+            <Button variant="outline" size="sm" onClick={saveSegment} disabled={transcriptSource === "zoom"}><Save className="h-4 w-4" /> Save Transcript Segment</Button>
+            <Button size="sm" onClick={() => runAction("Analyze Current Moment")} disabled={!!running || transcriptSource === "zoom"}>
               <Sparkles className="h-4 w-4" /> Analyze Current Moment
             </Button>
           </div>
+
           {chunks.length > 0 && (
             <div className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
               {chunks.length} segment{chunks.length !== 1 ? "s" : ""} saved
