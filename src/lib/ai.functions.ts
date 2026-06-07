@@ -15,6 +15,19 @@ const ACTION_BUTTONS = [
   "What should I avoid saying?",
 ] as const;
 
+// Backward compatibility: map legacy actionButton labels to current enum values.
+const LEGACY_ACTION_BUTTON_MAP: Record<string, (typeof ACTION_BUTTONS)[number]> = {
+  "Analyze Current Moment": "What are they really saying?",
+  "What Are They Really Saying?": "What are they really saying?",
+  "Suggest A Smarter Question": "What should I ask now?",
+  "Detect Buying Signal vs Stall": "Is this a buying signal?",
+  "Risk / Red Flag Check": "Is this a risk signal?",
+};
+
+function normalizeActionButton(input: string): string {
+  return LEGACY_ACTION_BUTTON_MAP[input] ?? input;
+}
+
 type Risk = "green" | "yellow" | "red";
 
 const NEXT_MOVES = [
