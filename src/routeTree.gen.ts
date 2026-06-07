@@ -9,38 +9,183 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCallsIndexRouteImport } from './routes/_authenticated/calls.index'
+import { Route as AuthenticatedCallsNewRouteImport } from './routes/_authenticated/calls.new'
+import { Route as AuthenticatedCallsIdRouteImport } from './routes/_authenticated/calls.$id'
+import { Route as AuthenticatedCallsIdSummaryRouteImport } from './routes/_authenticated/calls.$id.summary'
+import { Route as AuthenticatedCallsIdLiveRouteImport } from './routes/_authenticated/calls.$id.live'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCallsIndexRoute = AuthenticatedCallsIndexRouteImport.update({
+  id: '/calls/',
+  path: '/calls/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCallsNewRoute = AuthenticatedCallsNewRouteImport.update({
+  id: '/calls/new',
+  path: '/calls/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCallsIdRoute = AuthenticatedCallsIdRouteImport.update({
+  id: '/calls/$id',
+  path: '/calls/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCallsIdSummaryRoute =
+  AuthenticatedCallsIdSummaryRouteImport.update({
+    id: '/summary',
+    path: '/summary',
+    getParentRoute: () => AuthenticatedCallsIdRoute,
+  } as any)
+const AuthenticatedCallsIdLiveRoute =
+  AuthenticatedCallsIdLiveRouteImport.update({
+    id: '/live',
+    path: '/live',
+    getParentRoute: () => AuthenticatedCallsIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/calls/$id': typeof AuthenticatedCallsIdRouteWithChildren
+  '/calls/new': typeof AuthenticatedCallsNewRoute
+  '/calls/': typeof AuthenticatedCallsIndexRoute
+  '/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
+  '/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/calls/$id': typeof AuthenticatedCallsIdRouteWithChildren
+  '/calls/new': typeof AuthenticatedCallsNewRoute
+  '/calls': typeof AuthenticatedCallsIndexRoute
+  '/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
+  '/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/calls/$id': typeof AuthenticatedCallsIdRouteWithChildren
+  '/_authenticated/calls/new': typeof AuthenticatedCallsNewRoute
+  '/_authenticated/calls/': typeof AuthenticatedCallsIndexRoute
+  '/_authenticated/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
+  '/_authenticated/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/dashboard'
+    | '/settings'
+    | '/calls/$id'
+    | '/calls/new'
+    | '/calls/'
+    | '/calls/$id/live'
+    | '/calls/$id/summary'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/dashboard'
+    | '/settings'
+    | '/calls/$id'
+    | '/calls/new'
+    | '/calls'
+    | '/calls/$id/live'
+    | '/calls/$id/summary'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/reset-password'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/settings'
+    | '/_authenticated/calls/$id'
+    | '/_authenticated/calls/new'
+    | '/_authenticated/calls/'
+    | '/_authenticated/calls/$id/live'
+    | '/_authenticated/calls/$id/summary'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +193,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/calls/': {
+      id: '/_authenticated/calls/'
+      path: '/calls'
+      fullPath: '/calls/'
+      preLoaderRoute: typeof AuthenticatedCallsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/calls/new': {
+      id: '/_authenticated/calls/new'
+      path: '/calls/new'
+      fullPath: '/calls/new'
+      preLoaderRoute: typeof AuthenticatedCallsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/calls/$id': {
+      id: '/_authenticated/calls/$id'
+      path: '/calls/$id'
+      fullPath: '/calls/$id'
+      preLoaderRoute: typeof AuthenticatedCallsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/calls/$id/summary': {
+      id: '/_authenticated/calls/$id/summary'
+      path: '/summary'
+      fullPath: '/calls/$id/summary'
+      preLoaderRoute: typeof AuthenticatedCallsIdSummaryRouteImport
+      parentRoute: typeof AuthenticatedCallsIdRoute
+    }
+    '/_authenticated/calls/$id/live': {
+      id: '/_authenticated/calls/$id/live'
+      path: '/live'
+      fullPath: '/calls/$id/live'
+      preLoaderRoute: typeof AuthenticatedCallsIdLiveRouteImport
+      parentRoute: typeof AuthenticatedCallsIdRoute
+    }
   }
 }
 
+interface AuthenticatedCallsIdRouteChildren {
+  AuthenticatedCallsIdLiveRoute: typeof AuthenticatedCallsIdLiveRoute
+  AuthenticatedCallsIdSummaryRoute: typeof AuthenticatedCallsIdSummaryRoute
+}
+
+const AuthenticatedCallsIdRouteChildren: AuthenticatedCallsIdRouteChildren = {
+  AuthenticatedCallsIdLiveRoute: AuthenticatedCallsIdLiveRoute,
+  AuthenticatedCallsIdSummaryRoute: AuthenticatedCallsIdSummaryRoute,
+}
+
+const AuthenticatedCallsIdRouteWithChildren =
+  AuthenticatedCallsIdRoute._addFileChildren(AuthenticatedCallsIdRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedCallsIdRoute: typeof AuthenticatedCallsIdRouteWithChildren
+  AuthenticatedCallsNewRoute: typeof AuthenticatedCallsNewRoute
+  AuthenticatedCallsIndexRoute: typeof AuthenticatedCallsIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedCallsIdRoute: AuthenticatedCallsIdRouteWithChildren,
+  AuthenticatedCallsNewRoute: AuthenticatedCallsNewRoute,
+  AuthenticatedCallsIndexRoute: AuthenticatedCallsIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
