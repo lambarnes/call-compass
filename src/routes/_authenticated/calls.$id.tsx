@@ -28,6 +28,25 @@ function Field({ label, value }: { label: string; value?: string | null }) {
   );
 }
 
+function BulletField({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  const items = value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  if (items.length === 0) return null;
+  return (
+    <div>
+      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
+      <ul className="mt-1 text-sm list-disc pl-5 space-y-1">
+        {items.map((item, i) => (
+          <li key={i}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function CallDetail() {
   const { id } = Route.useParams();
   const fetchCall = useServerFn(getCall);
@@ -48,8 +67,7 @@ function CallDetail() {
     <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <div className="text-xs text-muted-foreground">{call.company_name}</div>
-          <h1 className="text-2xl md:text-3xl font-semibold mt-1">{call.title}</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold">{call.title}</h1>
           <div className="flex items-center gap-2 mt-2">
             <Badge variant="outline">{call.status.replace("_", " ")}</Badge>
             {call.call_datetime && <span className="text-xs text-muted-foreground">{new Date(call.call_datetime).toLocaleString()}</span>}
@@ -68,27 +86,50 @@ function CallDetail() {
         </div>
       </div>
 
-      <Card className="p-6 grid md:grid-cols-2 gap-x-8 gap-y-5">
-        <Field label="Contact" value={[call.contact_name, call.contact_role].filter(Boolean).join(" · ")} />
-        <Field label="Call type" value={call.call_type} />
-        <Field label="Deal stage" value={call.deal_stage} />
-        <Field label="Authority" value={call.authority_status} />
-        <Field label="Budget" value={call.budget_status} />
+      <Card className="p-6 space-y-4">
+        <h2 className="font-semibold">Contact Information</h2>
+        <Field label="Company Name" value={call.company_name} />
+        <Field label="Contact Name" value={call.contact_name} />
+        <Field label="Contact Role" value={call.contact_role} />
       </Card>
 
-      <Card className="p-6 space-y-5">
-        <h2 className="font-semibold">Objective & context</h2>
-        <Field label="Meeting objective" value={call.meeting_objective} />
-        <Field label="Business context" value={call.business_context} />
-        <Field label="What I need to learn" value={call.what_i_need_to_learn} />
-        <Field label="Planned questions" value={call.planned_questions} />
+      <Card className="p-6 space-y-4">
+        <h2 className="font-semibold">Call Objective</h2>
+        <Field label="Meeting Objective" value={call.meeting_objective} />
       </Card>
 
-      <Card className="p-6 space-y-5">
-        <h2 className="font-semibold">Risks & outcome</h2>
-        <Field label="Known concerns" value={call.known_concerns} />
-        <Field label="Risks to watch" value={call.risks_to_watch} />
-        <Field label="Desired outcome" value={call.desired_outcome} />
+      <Card className="p-6 space-y-4">
+        <h2 className="font-semibold">Business Context</h2>
+        <Field label="Business Context" value={call.business_context} />
+      </Card>
+
+      <Card className="p-6 space-y-4">
+        <h2 className="font-semibold">What I Need To Learn</h2>
+        <BulletField label="What I Need To Learn" value={call.what_i_need_to_learn} />
+      </Card>
+
+      <Card className="p-6 space-y-4">
+        <h2 className="font-semibold">Planned Questions</h2>
+        <BulletField label="Planned Questions" value={call.planned_questions} />
+      </Card>
+
+      <Card className="p-6 space-y-4">
+        <h2 className="font-semibold">Known Concerns</h2>
+        <Field label="Known Concerns" value={call.known_concerns} />
+      </Card>
+
+      <Card className="p-6 space-y-4">
+        <h2 className="font-semibold">Risks To Watch</h2>
+        <Field label="Risks To Watch" value={call.risks_to_watch} />
+      </Card>
+
+      <Card className="p-6 space-y-4">
+        <h2 className="font-semibold">Desired Outcome</h2>
+        <Field label="Desired Outcome" value={call.desired_outcome} />
+      </Card>
+
+      <Card className="p-6 space-y-4">
+        <h2 className="font-semibold">Notes</h2>
         <Field label="Notes" value={call.notes} />
       </Card>
     </div>
