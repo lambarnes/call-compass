@@ -1,41 +1,68 @@
-## Root cause
+## Goal
 
-`src/lib/ai.functions.ts` validates `actionButton` against a Zod enum (`ACTION_BUTTONS`) listing the old 8 labels. The UI now sends the 8 renamed labels, so every button click fails Zod validation before `generateLiveInsight` can insert into `live_insights`.
+Make each of the 8 Live Call Radar buttons produce a clearly distinct analysis lens. Only `src/lib/ai.functions.ts` changes. Same insight card fields, same Zod shape, same DB columns, same UI, same routing, same schema.
 
-## Fix (one file)
+## Scope
 
-`src/lib/ai.functions.ts`:
+- File: `src/lib/ai.functions.ts`
+- Function: `mockInsight(action, transcriptText)`
+- No other files. No migrations. No UI/route/auth/schema changes.
 
-1. Replace `ACTION_BUTTONS` array with the 8 current UI labels (exact strings):
-   - "What are they really saying?"
-   - "What should I ask now?"
-   - "What emotion or hesitation is showing?"
-   - "Is this a buying signal?"
-   - "Is this a risk signal?"
-   - "Am I moving too fast?"
-   - "Should I probe, pause, or close?"
-   - "What should I avoid saying?"
+## Approach
 
-2. Update the `switch (action)` block in `mockInsight` to key off the new labels so per-action variation still applies:
-   - "Is this a buying signal?" → buying-signal variant
-   - "Is this a risk signal?" → risk/red-flag variant
-   - "Am I moving too fast?" → pacing/authority-style variant
-   - "Should I probe, pause, or close?" → next-best-move variant
-   - "What should I avoid saying?" → question-to-avoid emphasis
-   - "What emotion or hesitation is showing?" → emotional-signal emphasis
-   - "What should I ask now?" → recommended-question emphasis
-   - "What are they really saying?" → default (likely true intent)
+Replace the current shared `base` object + small `switch` overrides with a per-action builder. Each branch fully owns the 9 card fields so the lens is unmistakably different:
 
-No changes to the Zod shape, handler logic, DB insert columns, UI, routing, auth, or schema. `action_button` column already stores free text.
+- `signal_type`
+- `risk_level`
+- `what_im_hearing`
+- `likely_true_intent`
+- `emotional_signal`
+- `hidden_risk`
+- `recommended_question`
+- `question_to_avoid`
+- `recommended_next_move`
+
+Keep the existing seeded `risk` and `move` derivation so output still varies with transcript content, but each branch decides which fields lead and how the prose is framed.
+
+### Per-button lens
+
+1. **"What are they really saying?"** — `signal_type: "True intent"`. `likely_true_intent` and `hidden_risk` lead (true intent, hidden concern, internal politics, unstated decision issue). `what_im_hearing` references transcript snippet.
+
+2. **"What should I ask now?"** — `signal_type: "Best next question"`. `recommended_question` leads with one specific question. `likely_true_intent` reframed as "why this question matters". `what_im_hearing` describes what a progress-signaling answer vs. risk-signaling answer would sound like. `hidden_risk` = risk-signal answer.
+
+3. **"What emotion or hesitation is showing?"** — `signal_type: "Emotional signal"`. `emotional_signal` leads with hesitation/confidence/uncertainty/fear/caution/urgency/frustration/defensiveness varied by seeded `risk`. `what_im_hearing` cites tonal cues. `hidden_risk` = what the emotion is masking.
+
+4. **"Is this a buying signal?"** — `signal_type: "Buying signal"`. `what_im_hearing` rates buying strength (weak/moderate/strong via seed). `likely_true_intent` covers commercial + budget + authority readiness. `recommended_next_move` = next-stage probability move. `hidden_risk` = what would kill the deal.
+
+5. **"Is this a risk signal?"** — `signal_type: "Risk signal"`, `risk_level: "red"`. `hidden_risk` enumerates authority/budget/timeline/scope/decision-stall risks. `what_im_hearing` points to the specific risk surfacing. `recommended_next_move` = de-risk move.
+
+6. **"Am I moving too fast?"** — `signal_type: "Pacing check"`. `what_im_hearing` judges whether caller has clarity. `likely_true_intent` calls out solutioning-too-early risk. `recommended_next_move: "Pause — do not push"` (or "Proceed — they're ready" when seed = green). `recommended_question` = a slow-down question.
+
+7. **"Should I probe, pause, or close?"** — `signal_type: "Call-control move"`. `recommended_next_move` is one of probe / pause / confirm / move-to-next-step chosen from seed + risk. `what_im_hearing` justifies the choice. `recommended_question` matches the chosen move.
+
+8. **"What should I avoid saying?"** — `signal_type: "Language to avoid"`. `question_to_avoid` leads with concrete phrasings (budget pressure, premature promises, scope commitments, trust-damaging language). `hidden_risk` = the resistance that bad phrasing triggers. `recommended_question` = the safer reframe.
+
+### Implementation shape
+
+Refactor `mockInsight` so the `switch` returns a fully-formed object per case (no shared `base` mutated after the fact). Keep helper for seeded `risk` and `move`. Default branch keeps current "What are they really saying?" behavior as fallback (defensive only — Zod enum already constrains input).
 
 ## Out of scope
 
-- No UI changes
-- No routing/auth changes
-- No schema/migration changes
-- No new fields
+- UI, routing, auth changes
+- Schema / migration changes
+- New fields on `live_insights`
+- `generateAfterCallSummary` (untouched)
 
 ## Verification
 
-After build, click each of the 8 buttons on `/calls/$id/live`:
-1–8. Each call to `generateLiveInsight` passes Zod, returns an insight, and a new row appears in `live_insights` with `action_button` = the clicked label. Confirm no console/network 400s.
+After build, on `/calls/$id/live`:
+1. Click each of the 8 buttons in sequence.
+2. Confirm each rendered insight card leads with the field matching its lens (e.g. emotion button leads with emotional_signal copy; risk button shows red and enumerated risk types; avoid button shows concrete question_to_avoid phrasings).
+3. Confirm rows in `live_insights` differ across buttons in `signal_type` and the lens fields.
+4. No console / network 400s.
+
+## Return after change
+
+- files changed: `src/lib/ai.functions.ts`
+- schema changes: no
+- each button has distinct logic: yes (8 dedicated branches)

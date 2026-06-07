@@ -33,57 +33,146 @@ function mockInsight(action: string, transcriptText: string) {
   const seed = hash(action + len.toString());
   const risk: Risk = (["green", "yellow", "red"] as Risk[])[seed % 3];
   const move = NEXT_MOVES[seed % NEXT_MOVES.length];
+  const snippet = transcriptText ? `"${transcriptText.slice(0, 80).trim()}..."` : "(no transcript captured yet)";
 
-  const base = {
-    signal_type: action,
-    risk_level: risk,
-    what_im_hearing: transcriptText
-      ? `Tone is measured; the caller is anchoring on cost and timeline. They mentioned "${transcriptText.slice(0, 80).trim()}..."`
-      : "No transcript yet — capture a passage and analyze.",
-    likely_true_intent: "They want validation that this is the right time and the right person to lead the work — not just pricing.",
-    emotional_signal: risk === "red" ? "Defensive / guarded" : risk === "yellow" ? "Cautiously interested" : "Open and exploratory",
-    hidden_risk: "An unnamed internal stakeholder (likely Finance) has veto power and hasn't been mentioned.",
-    recommended_question: "Walk me through who else would weigh in on a decision like this — and what would make them say no?",
-    question_to_avoid: "Avoid asking budget directly right now — it will harden the stance you just heard.",
-    recommended_next_move: move,
-  };
-
-  // Slight per-action variation
   switch (action) {
-    case "Is this a buying signal?":
-      base.signal_type = "Buying signal vs stall";
-      base.what_im_hearing = "Language is shifting from 'we're evaluating' to 'when we'd start' — that's a forward signal, not a stall.";
-      break;
-    case "Is this a risk signal?":
-      base.signal_type = "Risk / red flag";
-      base.risk_level = "red";
-      base.hidden_risk = "Procurement is being mentioned indirectly — expect a 4-6 week paperwork tail.";
-      break;
-    case "Am I moving too fast?":
-      base.signal_type = "Pacing check";
-      base.recommended_next_move = "Pause — do not push";
-      base.recommended_question = "Besides yourself, whose sign-off would this need before anything starts?";
-      break;
-    case "Should I probe, pause, or close?":
-      base.signal_type = "Next best move";
-      break;
-    case "What should I avoid saying?":
-      base.signal_type = "Question to avoid";
-      base.question_to_avoid = "Avoid pushing budget or timeline commitments right now — it will harden the stance you just heard.";
-      break;
-    case "What emotion or hesitation is showing?":
-      base.signal_type = "Emotional signal";
-      base.emotional_signal = risk === "red" ? "Guarded, hesitant — protecting against a wrong call" : risk === "yellow" ? "Curious but cautious — testing the waters" : "Open and exploratory — leaning in";
-      break;
-    case "What should I ask now?":
-      base.signal_type = "Smarter question";
-      break;
+    case "What should I ask now?": {
+      const q = "Walk me through who else weighs in on a decision like this — and what would make them say no?";
+      return {
+        signal_type: "Best next question",
+        risk_level: risk,
+        what_im_hearing: `Progress sounds like: they name a specific person and a specific objection. Risk sounds like: "just me" or "we'll figure it out" — that's a stall dressed as confidence.`,
+        likely_true_intent: "This question matters because it surfaces the hidden veto holder before you've committed scope or price.",
+        emotional_signal: "Neutral — diagnostic question, low threat to the caller.",
+        hidden_risk: "If they deflect or generalize, the real decision-maker hasn't been in the room yet.",
+        recommended_question: q,
+        question_to_avoid: "Don't ask 'are you the decision-maker?' — it forces a face-saving yes.",
+        recommended_next_move: "Ask a clarifying question",
+      };
+    }
+    case "What emotion or hesitation is showing?": {
+      const emotion =
+        risk === "red"
+          ? "Defensive and guarded — short answers, hedging language, protecting against a wrong call"
+          : risk === "yellow"
+            ? "Cautiously interested — curious but testing, watching for pressure"
+            : "Open and leaning in — volunteering context, asking forward-looking questions";
+      return {
+        signal_type: "Emotional signal",
+        risk_level: risk,
+        what_im_hearing: `Tonal cues in ${snippet} — pacing, qualifiers ("kind of", "maybe"), and where they pause tell you more than the words.`,
+        likely_true_intent: "The emotion is the real message; the words are the cover.",
+        emotional_signal: emotion,
+        hidden_risk: risk === "red" ? "They've already had a bad experience like this — you're being measured against it." : "Confidence may be masking unresolved internal disagreement.",
+        recommended_question: "What would have to be true for this to feel like an obvious yes a month from now?",
+        question_to_avoid: "Don't ask 'does that make sense?' — it reads as pressure when they're hesitant.",
+        recommended_next_move: risk === "red" ? "Pause — do not push" : "Ask a clarifying question",
+      };
+    }
+    case "Is this a buying signal?": {
+      const strength = risk === "green" ? "Strong" : risk === "yellow" ? "Moderate" : "Weak";
+      return {
+        signal_type: "Buying signal",
+        risk_level: risk,
+        what_im_hearing: `${strength} buying signal. Language is ${risk === "green" ? "shifting from 'evaluating' to 'when we'd start'" : risk === "yellow" ? "still exploratory but specifics are creeping in" : "still abstract — no timing, no names, no numbers"}.`,
+        likely_true_intent: `Commercial readiness: ${strength.toLowerCase()}. Budget readiness: ${risk === "green" ? "in place" : risk === "yellow" ? "directionally approved, not allocated" : "not confirmed"}. Authority readiness: ${risk === "red" ? "single contact, no sponsor named" : "sponsor implied but not engaged"}.`,
+        emotional_signal: risk === "green" ? "Forward-leaning, time-aware" : "Interested but non-committal",
+        hidden_risk: "What kills this: a competing internal priority lands before you've secured the next concrete step.",
+        recommended_question: "If we agreed on scope this week, what would have to happen on your side to start next month?",
+        question_to_avoid: "Don't ask for the budget number yet — it converts a buying signal into a procurement conversation.",
+        recommended_next_move: risk === "green" ? "Close for the next concrete step" : "Confirm authority / decision process",
+      };
+    }
+    case "Is this a risk signal?": {
+      return {
+        signal_type: "Risk signal",
+        risk_level: "red",
+        what_im_hearing: `Specific risk surfacing in ${snippet} — hedged language and references to "the team" / "process" / "later" without names or dates.`,
+        likely_true_intent: "They're flagging a blocker without naming it. Your job is to name it for them.",
+        emotional_signal: "Cautious, protective — they've seen this go wrong before.",
+        hidden_risk: "Authority risk: real decision-maker absent. Budget risk: no number, no owner. Timeline risk: 'sometime this quarter' = next quarter. Scope risk: definition still drifting. Decision-stall risk: procurement / legal hasn't been mentioned and will add weeks.",
+        recommended_question: "Walk me through the last time a project like this got stuck internally — what caused it?",
+        question_to_avoid: "Don't ask 'is there anything that could slow this down?' — they'll say no out of politeness.",
+        recommended_next_move: "Surface a risk gently",
+      };
+    }
+    case "Am I moving too fast?": {
+      const tooFast = risk !== "green";
+      return {
+        signal_type: "Pacing check",
+        risk_level: risk,
+        what_im_hearing: tooFast
+          ? "The caller doesn't have enough clarity yet — they're answering your questions but not volunteering specifics. That's a sign you're ahead of where they are."
+          : "Caller has enough clarity to move forward — they're matching your pace and adding their own specifics.",
+        likely_true_intent: tooFast
+          ? "Solutioning now would lock in the wrong scope and create rework. Stay in diagnosis."
+          : "They're ready for a concrete next step; further discovery will feel like stalling.",
+        emotional_signal: tooFast ? "Slightly overwhelmed — too much, too soon" : "Engaged and ready",
+        hidden_risk: "If you propose scope before they own the problem, the proposal becomes the negotiation — not the solution.",
+        recommended_question: tooFast
+          ? "Before we talk about how, can you tell me what 'done well' would look like from your side?"
+          : "Given what we've covered, what's the smallest concrete next step that would feel like progress?",
+        question_to_avoid: "Don't pitch the approach yet — naming a methodology hardens expectations.",
+        recommended_next_move: tooFast ? "Pause — do not push" : "Close for the next concrete step",
+      };
+    }
+    case "Should I probe, pause, or close?": {
+      const chosen: "Probe" | "Pause" | "Confirm" | "Close" =
+        risk === "red" ? "Pause" : risk === "yellow" ? "Probe" : seed % 2 === 0 ? "Confirm" : "Close";
+      const moveMap: Record<typeof chosen, (typeof NEXT_MOVES)[number]> = {
+        Probe: "Ask a clarifying question",
+        Pause: "Pause — do not push",
+        Confirm: "Confirm authority / decision process",
+        Close: "Close for the next concrete step",
+      };
+      const questionMap: Record<typeof chosen, string> = {
+        Probe: "What's the part of this you're least sure about?",
+        Pause: "Want to take a moment — anything you'd like me to clarify before we go further?",
+        Confirm: "Besides yourself, whose explicit sign-off would this need before anything starts?",
+        Close: "If we agree on the shape of this today, can we lock a working session for next week?",
+      };
+      return {
+        signal_type: "Call-control move",
+        risk_level: risk,
+        what_im_hearing: `Signal mix points to: ${chosen}. ${chosen === "Pause" ? "Pressure now would harden the position you just heard." : chosen === "Probe" ? "Enough interest to keep digging; not enough clarity to advance." : chosen === "Confirm" ? "Forward signals are real, but authority hasn't been verified." : "All forward signals present — staying in discovery now is the bigger risk."}`,
+        likely_true_intent: chosen === "Close" ? "They're waiting for you to lead the next step." : "They want more shape before committing further.",
+        emotional_signal: chosen === "Pause" ? "Guarded" : chosen === "Close" ? "Decisive" : "Engaged",
+        hidden_risk: chosen === "Close" ? "Closing without naming the sponsor leaves you exposed in week 2." : "Over-probing now reads as indecision on your side.",
+        recommended_question: questionMap[chosen],
+        question_to_avoid: "Don't ask multi-part questions right now — pick one.",
+        recommended_next_move: moveMap[chosen],
+      };
+    }
+    case "What should I avoid saying?": {
+      return {
+        signal_type: "Language to avoid",
+        risk_level: risk,
+        what_im_hearing: `Given the tone in ${snippet}, certain phrasings will trigger resistance even if the underlying point is correct.`,
+        likely_true_intent: "Trust is fragile here; one wrong line costs you the next meeting.",
+        emotional_signal: "Sensitive to pressure — measuring you against past vendors",
+        hidden_risk: "Premature promises ('we can definitely do that'), budget pressure ('what's your range?'), and scope commitments ('we'd include X') all convert a discovery call into a negotiation you haven't earned.",
+        recommended_question: "Reframe instead: 'Help me understand what success looks like before I commit to an approach.'",
+        question_to_avoid: "Avoid: 'we've done this exact thing before' (sounds glib), 'what's your budget?' (premature), 'we can start next week' (over-promise), 'that's easy' (dismissive of their complexity).",
+        recommended_next_move: "Ask a clarifying question",
+      };
+    }
     case "What are they really saying?":
-    default:
-      break;
+    default: {
+      return {
+        signal_type: "True intent",
+        risk_level: risk,
+        what_im_hearing: `Surface message in ${snippet} is about cost and timeline. Underneath, the caller is anchoring on whether this is the right time and the right person to lead the work.`,
+        likely_true_intent: "They want validation that this won't be the decision they have to defend internally six months from now.",
+        emotional_signal: risk === "red" ? "Guarded — protecting against a wrong call" : risk === "yellow" ? "Cautiously interested" : "Open and exploratory",
+        hidden_risk: "An unnamed internal stakeholder (likely Finance or a skeptical peer) has veto power and hasn't been mentioned. Internal politics, not price, is the real gating issue.",
+        recommended_question: "Who else inside the business would need to feel good about this — and what would they push back on first?",
+        question_to_avoid: "Avoid asking budget directly right now — it will harden the stance you just heard.",
+        recommended_next_move: move,
+      };
+    }
   }
-  return base;
 }
+
 
 export const generateLiveInsight = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
