@@ -35,16 +35,31 @@ export const Route = createFileRoute("/_authenticated/calls/$id/live")({
   component: LiveRadar,
 });
 
-const ACTIONS = [
-  "What are they really saying?",
-  "What should I ask now?",
-  "What emotion or hesitation is showing?",
-  "Is this a buying signal?",
-  "Is this a risk signal?",
-  "Am I moving too fast?",
-  "Should I probe, pause, or close?",
-  "What should I avoid saying?",
+const ACTION_GROUPS: { label: string; actions: string[] }[] = [
+  { label: "Understanding", actions: ["What are they really saying?", "What emotion or hesitation is showing?"] },
+  { label: "Discovery", actions: ["What should I ask now?", "Should I probe, pause, or close?"] },
+  { label: "Qualification", actions: ["Is this a buying signal?", "Is this a risk signal?"] },
+  { label: "Control", actions: ["Am I moving too fast?", "What should I avoid saying?"] },
 ];
+
+function stageLabel(r: string) {
+  if (r === "red") return "Red";
+  if (r === "yellow") return "Yellow";
+  return "Green";
+}
+function stageDotClass(r: string) {
+  if (r === "red") return "bg-risk-red";
+  if (r === "yellow") return "bg-risk-yellow";
+  return "bg-risk-green";
+}
+function firstClause(s: string, max = 60) {
+  const clean = s.split(/[.;\n]/)[0].trim();
+  return clean.length > max ? clean.slice(0, max - 1) + "…" : clean;
+}
+function confidenceFor(id: string) {
+  const hash = String(id).split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  return 60 + (hash % 36);
+}
 
 function riskClass(r: string) {
   if (r === "red") return "bg-risk-red/15 text-foreground border-risk-red/40";
