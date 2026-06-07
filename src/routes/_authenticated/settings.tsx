@@ -75,6 +75,10 @@ function Settings() {
         <div className="flex justify-end"><Button onClick={save} disabled={saving}>{saving ? "Saving..." : "Save"}</Button></div>
       </Card>
 
+      <ZoomIntegrationCard />
+
+
+
       <Card className="p-6 flex items-center justify-between">
         <div><div className="font-semibold">Sign out</div><div className="text-sm text-muted-foreground">End your session.</div></div>
         <Button variant="outline" onClick={signOut}>Sign out</Button>
