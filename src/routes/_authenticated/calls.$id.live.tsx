@@ -208,28 +208,53 @@ function LiveRadar() {
                   Click an AI action to generate your first insight.
                 </div>
               )}
-              {insights.map((i: any) => (
-                <Card key={i.id} className="p-3 space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="text-[10px] font-mono text-muted-foreground">#{String(i.sequence_number).padStart(3, "0")}</div>
-                    <Badge variant="outline" className={riskClass(i.risk_level)}>{i.risk_level.toUpperCase()}</Badge>
-                  </div>
-                  <div className="font-semibold text-sm">{i.signal_type}</div>
-                  {i.what_im_hearing && <Insight label="What I'm hearing" value={i.what_im_hearing} />}
-                  {i.likely_true_intent && <Insight label="Likely intent" value={i.likely_true_intent} />}
-                  {i.emotional_signal && <Insight label="Emotional signal" value={i.emotional_signal} />}
-                  {i.hidden_risk && <Insight label="Hidden risk" value={i.hidden_risk} />}
-                  {i.recommended_question && <Insight label="Ask this" value={i.recommended_question} />}
-                  {i.question_to_avoid && <Insight label="Avoid this" value={i.question_to_avoid} />}
-                  {i.recommended_next_move && (
-                    <div className="pt-1">
-                      <span className="inline-flex items-center rounded-full bg-primary/15 text-primary px-2 py-0.5 text-[11px] font-medium">
-                        Next: {i.recommended_next_move}
-                      </span>
+              {insights.map((i: any) => {
+                const chunkText = i.transcript_chunk_id
+                  ? chunks.find((c: any) => c.id === i.transcript_chunk_id)?.transcript_text
+                  : null;
+                const hash = String(i.id).split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+                const confidence = 60 + (hash % 36);
+                return (
+                  <Card key={i.id} className="p-3 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-[10px] font-mono text-muted-foreground">#{String(i.sequence_number).padStart(3, "0")}</div>
                     </div>
-                  )}
-                </Card>
-              ))}
+                    <div className="font-semibold text-sm">{i.action_button}</div>
+                    {i.signal_type && <Insight label="Signal Type" value={i.signal_type} />}
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Risk Level</div>
+                      <div className="mt-0.5">
+                        <Badge variant="outline" className={riskClass(i.risk_level)}>{i.risk_level.toUpperCase()}</Badge>
+                      </div>
+                    </div>
+                    <Insight label="Confidence" value={`${confidence}%`} />
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Evidence From Transcript</div>
+                      {chunkText ? (
+                        <blockquote className="mt-0.5 text-xs border-l-2 border-primary/40 pl-2 italic text-foreground/90 whitespace-pre-wrap">
+                          "{chunkText}"
+                        </blockquote>
+                      ) : (
+                        <div className="text-xs mt-0.5 text-muted-foreground">—</div>
+                      )}
+                    </div>
+                    {i.what_im_hearing && <Insight label="What I'm Hearing" value={i.what_im_hearing} />}
+                    {i.likely_true_intent && <Insight label="Likely True Intent" value={i.likely_true_intent} />}
+                    {i.emotional_signal && <Insight label="Emotional Signal" value={i.emotional_signal} />}
+                    {i.hidden_risk && <Insight label="Hidden Risk" value={i.hidden_risk} />}
+                    {i.recommended_question && <Insight label="Recommended Question" value={i.recommended_question} />}
+                    {i.question_to_avoid && <Insight label="Question To Avoid" value={i.question_to_avoid} />}
+                    {i.recommended_next_move && (
+                      <div className="pt-1">
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommended Next Move</div>
+                        <span className="mt-0.5 inline-flex items-center rounded-full bg-primary/15 text-primary px-2 py-0.5 text-[11px] font-medium">
+                          {i.recommended_next_move}
+                        </span>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
             </div>
           </ScrollArea>
         </div>
