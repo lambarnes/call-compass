@@ -1,44 +1,41 @@
-## Scope
+## Root cause
 
-Presentation-only change to insight cards on the Live Call Radar page. Single file: `src/routes/_authenticated/calls.$id.live.tsx`. No schema, auth, routing, layout, or button behavior changes.
+`src/lib/ai.functions.ts` validates `actionButton` against a Zod enum (`ACTION_BUTTONS`) listing the old 8 labels. The UI now sends the 8 renamed labels, so every button click fails Zod validation before `generateLiveInsight` can insert into `live_insights`.
 
-## Changes
+## Fix (one file)
 
-Rewrite the insight card JSX in the right-hand panel so each card renders fields in this exact order:
+`src/lib/ai.functions.ts`:
 
-1. **Card title** — the `action_button` value (e.g. "What are they really saying?"), not `signal_type`
-2. **Signal Type** — `signal_type`
-3. **Risk Level** — `risk_level` badge (keep existing colored badge styling)
-4. **Confidence %** — derived client-side (see Technical notes)
-5. **Evidence From Transcript** — exact quote of the linked transcript chunk text (see Technical notes)
-6. **What I'm Hearing** — `what_im_hearing`
-7. **Likely True Intent** — `likely_true_intent`
-8. **Emotional Signal** — `emotional_signal`
-9. **Hidden Risk** — `hidden_risk`
-10. **Recommended Question** — `recommended_question`
-11. **Question To Avoid** — `question_to_avoid`
-12. **Recommended Next Move** — `recommended_next_move` (keep existing pill styling)
+1. Replace `ACTION_BUTTONS` array with the 8 current UI labels (exact strings):
+   - "What are they really saying?"
+   - "What should I ask now?"
+   - "What emotion or hesitation is showing?"
+   - "Is this a buying signal?"
+   - "Is this a risk signal?"
+   - "Am I moving too fast?"
+   - "Should I probe, pause, or close?"
+   - "What should I avoid saying?"
 
-Sequence number (`#001`) stays in the card header as today.
+2. Update the `switch (action)` block in `mockInsight` to key off the new labels so per-action variation still applies:
+   - "Is this a buying signal?" → buying-signal variant
+   - "Is this a risk signal?" → risk/red-flag variant
+   - "Am I moving too fast?" → pacing/authority-style variant
+   - "Should I probe, pause, or close?" → next-best-move variant
+   - "What should I avoid saying?" → question-to-avoid emphasis
+   - "What emotion or hesitation is showing?" → emotional-signal emphasis
+   - "What should I ask now?" → recommended-question emphasis
+   - "What are they really saying?" → default (likely true intent)
 
-## Technical notes
-
-The schema cannot change, so two of the required fields must be derived in the UI:
-
-- **Evidence From Transcript**: build a `Map<chunkId, transcript_text>` from the already-loaded `chunks` query, then look up `insight.transcript_chunk_id`. Render as a blockquote-styled snippet. If no chunk is linked, render "—".
-- **Confidence %**: not stored. Derive deterministically from `insight.id` (stable hash → 60–95% range) so the value is consistent across renders. Display as e.g. "82%".
-
-Card title (`action_button`) is already persisted on every row, so no data work needed — just swap which field drives the title.
-
-All other fields already exist on the `live_insights` row and only need to be reordered and conditionally rendered (skip empty values, matching today's behavior).
+No changes to the Zod shape, handler logic, DB insert columns, UI, routing, auth, or schema. `action_button` column already stores free text.
 
 ## Out of scope
 
-- Server function `generateLiveInsight` and its mock generator
-- The `ACTIONS` button list and click behavior
-- Page layout, columns, brief panel, transcript panel
-- Database schema, RLS, routing, auth
+- No UI changes
+- No routing/auth changes
+- No schema/migration changes
+- No new fields
 
-## Files touched
+## Verification
 
-- `src/routes/_authenticated/calls.$id.live.tsx` (only)
+After build, click each of the 8 buttons on `/calls/$id/live`:
+1–8. Each call to `generateLiveInsight` passes Zod, returns an insight, and a new row appears in `live_insights` with `action_button` = the clicked label. Confirm no console/network 400s.

@@ -5,14 +5,14 @@ import { z } from "zod";
 // ============ Mock insight generator ============
 
 const ACTION_BUTTONS = [
-  "Analyze Current Moment",
-  "What Are They Really Saying?",
-  "Detect Buying Signal vs Stall",
-  "Suggest A Smarter Question",
-  "Risk / Red Flag Check",
-  "Authority & Decision Check",
-  "Reframe My Pitch",
-  "Suggest Next Best Move",
+  "What are they really saying?",
+  "What should I ask now?",
+  "What emotion or hesitation is showing?",
+  "Is this a buying signal?",
+  "Is this a risk signal?",
+  "Am I moving too fast?",
+  "Should I probe, pause, or close?",
+  "What should I avoid saying?",
 ] as const;
 
 type Risk = "green" | "yellow" | "red";
@@ -50,25 +50,36 @@ function mockInsight(action: string, transcriptText: string) {
 
   // Slight per-action variation
   switch (action) {
-    case "Detect Buying Signal vs Stall":
+    case "Is this a buying signal?":
       base.signal_type = "Buying signal vs stall";
       base.what_im_hearing = "Language is shifting from 'we're evaluating' to 'when we'd start' — that's a forward signal, not a stall.";
       break;
-    case "Risk / Red Flag Check":
+    case "Is this a risk signal?":
       base.signal_type = "Risk / red flag";
       base.risk_level = "red";
       base.hidden_risk = "Procurement is being mentioned indirectly — expect a 4-6 week paperwork tail.";
       break;
-    case "Authority & Decision Check":
-      base.signal_type = "Authority check";
+    case "Am I moving too fast?":
+      base.signal_type = "Pacing check";
+      base.recommended_next_move = "Pause — do not push";
       base.recommended_question = "Besides yourself, whose sign-off would this need before anything starts?";
       break;
-    case "Reframe My Pitch":
-      base.signal_type = "Pitch reframe";
-      base.recommended_next_move = "Send a written proposal";
-      break;
-    case "Suggest Next Best Move":
+    case "Should I probe, pause, or close?":
       base.signal_type = "Next best move";
+      break;
+    case "What should I avoid saying?":
+      base.signal_type = "Question to avoid";
+      base.question_to_avoid = "Avoid pushing budget or timeline commitments right now — it will harden the stance you just heard.";
+      break;
+    case "What emotion or hesitation is showing?":
+      base.signal_type = "Emotional signal";
+      base.emotional_signal = risk === "red" ? "Guarded, hesitant — protecting against a wrong call" : risk === "yellow" ? "Curious but cautious — testing the waters" : "Open and exploratory — leaning in";
+      break;
+    case "What should I ask now?":
+      base.signal_type = "Smarter question";
+      break;
+    case "What are they really saying?":
+    default:
       break;
   }
   return base;
