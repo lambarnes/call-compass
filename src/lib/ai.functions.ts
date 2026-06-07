@@ -27,11 +27,49 @@ const NEXT_MOVES = [
   "Pause — do not push",
 ] as const;
 
+// Discovery Stage rubric — keyword signals classify the call's risk level.
+// RED = explicit blockers; YELLOW = unresolved ownership/budget; GREEN = owner, sponsor, timeline, budget process all clear.
+const DISCOVERY_SIGNALS = {
+  red: [
+    "no budget", "don't have budget", "no money", "can't afford",
+    "no sponsor", "no executive", "no exec sponsor",
+    "no problem", "not a problem", "no business case",
+    "no urgency", "not urgent", "no rush", "no timeline",
+    "pushback", "opposed", "against it", "internal opposition", "blocked by",
+  ],
+  yellow: [
+    "not sure who", "unclear who owns", "ownership", "who owns",
+    "board approval", "needs board", "awaiting approval", "pending approval",
+    "budget tbd", "budget not defined", "no number yet", "still scoping budget",
+    "evaluating", "comparing", "shortlist", "other vendors", "rfp",
+  ],
+  green: [
+    "i own", "i'm the owner", "owner is", "decision owner",
+    "sponsor is", "exec sponsor", "executive sponsor", "ceo is backing", "cfo signed",
+    "timeline is", "go-live", "launch by", "kickoff", "start date",
+    "budget approved", "budget allocated", "po process", "procurement path", "budget process",
+  ],
+} as const;
+
+function classifyDiscoveryRisk(transcriptText: string): { risk: Risk; matched: string[] } | null {
+  const t = transcriptText.toLowerCase();
+  if (!t.trim()) return null;
+  const redHits = DISCOVERY_SIGNALS.red.filter((k) => t.includes(k));
+  if (redHits.length > 0) return { risk: "red", matched: redHits };
+  const yellowHits = DISCOVERY_SIGNALS.yellow.filter((k) => t.includes(k));
+  if (yellowHits.length > 0) return { risk: "yellow", matched: yellowHits };
+  const greenHits = DISCOVERY_SIGNALS.green.filter((k) => t.includes(k));
+  if (greenHits.length >= 2) return { risk: "green", matched: greenHits };
+  return null;
+}
+
 function mockInsight(action: string, transcriptText: string) {
   const len = transcriptText.length;
   const hash = (s: string) => s.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
   const seed = hash(action + len.toString());
-  const risk: Risk = (["green", "yellow", "red"] as Risk[])[seed % 3];
+  // Discovery Stage rubric takes precedence over seeded risk when transcript signals are present.
+  const discovery = classifyDiscoveryRisk(transcriptText);
+  const risk: Risk = discovery?.risk ?? (["green", "yellow", "red"] as Risk[])[seed % 3];
   const move = NEXT_MOVES[seed % NEXT_MOVES.length];
   const snippet = transcriptText ? `"${transcriptText.slice(0, 80).trim()}..."` : "(no transcript captured yet)";
 
