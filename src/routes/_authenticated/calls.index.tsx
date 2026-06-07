@@ -35,7 +35,7 @@ function SavedCalls() {
         <Card className="p-10 text-center text-muted-foreground">No calls yet.</Card>
       ) : (
         <div className="grid gap-3">
-          {calls.map((c) => (
+          {calls.map((c: any) => (
             <Link key={c.id} to="/calls/$id" params={{ id: c.id }}>
               <Card className="p-4 hover:border-primary/40 transition-colors">
                 <div className="flex items-center justify-between gap-3">

@@ -208,7 +208,7 @@ function LiveRadar() {
                   Click an AI action to generate your first insight.
                 </div>
               )}
-              {insights.map((i) => (
+              {insights.map((i: any) => (
                 <Card key={i.id} className="p-3 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <div className="text-[10px] font-mono text-muted-foreground">#{String(i.sequence_number).padStart(3, "0")}</div>

@@ -29,8 +29,8 @@ function Dashboard() {
 
   const stats = {
     total: calls.length,
-    upcoming: calls.filter((c) => c.status === "ready" || c.status === "draft").length,
-    completed: calls.filter((c) => c.status === "completed" || c.status === "follow_up_done").length,
+    upcoming: calls.filter((c: any) => c.status === "ready" || c.status === "draft").length,
+    completed: calls.filter((c: any) => c.status === "completed" || c.status === "follow_up_done").length,
   };
 
   return (
@@ -74,7 +74,7 @@ function Dashboard() {
           </Card>
         ) : (
           <div className="grid gap-3">
-            {recent.map((c) => (
+            {recent.map((c: any) => (
               <Link key={c.id} to="/calls/$id" params={{ id: c.id }}>
                 <Card className="p-4 hover:border-primary/40 transition-colors">
                   <div className="flex items-center justify-between gap-3">
