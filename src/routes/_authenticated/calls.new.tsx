@@ -16,8 +16,8 @@ export const Route = createFileRoute("/_authenticated/calls/new")({
 
 const CALL_TYPES = ["Discovery", "Diagnostic", "Pitch / proposal", "Working session", "Check-in", "Renewal", "Other"];
 const DEAL_STAGES = ["First conversation", "Active eval", "Proposal", "Negotiation", "Closed-won", "Closed-lost", "N/A"];
-const AUTHORITY = ["Decision maker", "Strong influencer", "Researcher only", "Unknown"];
-const BUDGET = ["Budget confirmed", "Budget likely", "No budget defined", "Unknown"];
+const AUTHORITY = ["Confirmed", "Unclear", "Not Decision Maker", "Multiple Stakeholders"];
+const BUDGET = ["Confirmed", "Range Mentioned", "Unclear", "No Budget", "Avoided"];
 
 function NewCallBrief() {
   const navigate = useNavigate();
