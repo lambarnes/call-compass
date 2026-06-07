@@ -102,47 +102,156 @@ function mockInsight(action: string, transcriptText: string) {
       };
     }
     case "What emotion or hesitation is showing?": {
-      const emotion =
-        risk === "red"
-          ? "Defensive and guarded — short answers, hedging language, protecting against a wrong call"
-          : risk === "yellow"
-            ? "Cautiously interested — curious but testing, watching for pressure"
-            : "Open and leaning in — volunteering context, asking forward-looking questions";
+      // Executive emotion taxonomy: political fear, uncertainty, loss of control,
+      // credibility risk, career risk, budget anxiety.
+      const t = transcriptText.toLowerCase();
+      const emotions: { label: string; cue: string }[] = [];
+      if (/board|cfo|ceo|exec|leadership|optics|how it looks/.test(t))
+        emotions.push({ label: "Political fear", cue: "references to leadership / board / 'how this looks'" });
+      if (/not sure|unclear|don't know|maybe|kind of|figure (it|that) out/.test(t))
+        emotions.push({ label: "Uncertainty", cue: "hedged language and qualifiers" });
+      if (/process|procurement|legal|approval|hand(ed|s) off|out of my/.test(t))
+        emotions.push({ label: "Loss of control", cue: "decision is being routed away from them" });
+      if (/last time|burned|previous vendor|didn't work|track record|prove/.test(t))
+        emotions.push({ label: "Credibility risk", cue: "measuring you against a prior bad experience" });
+      if (/my (role|job|team)|on me|i'd own|i recommended|i champion/.test(t))
+        emotions.push({ label: "Career risk", cue: "they personally carry the outcome internally" });
+      if (/budget|cost|price|expensive|afford|cfo|finance/.test(t))
+        emotions.push({ label: "Budget anxiety", cue: "money referenced before value is established" });
+      const primary = emotions[0] ?? {
+        label: risk === "red" ? "Defensive caution" : risk === "yellow" ? "Cautious interest" : "Open engagement",
+        cue: "tone and pacing — not explicit words",
+      };
+      const secondary = emotions[1];
       return {
         signal_type: "Emotional signal",
         risk_level: risk,
-        what_im_hearing: `Tonal cues in ${snippet} — pacing, qualifiers ("kind of", "maybe"), and where they pause tell you more than the words.`,
+        what_im_hearing: `Primary emotion: ${primary.label} — driven by ${primary.cue}.${secondary ? ` Secondary: ${secondary.label} (${secondary.cue}).` : ""}`,
         likely_true_intent: "The emotion is the real message; the words are the cover.",
-        emotional_signal: emotion,
-        hidden_risk: risk === "red" ? "They've already had a bad experience like this — you're being measured against it." : "Confidence may be masking unresolved internal disagreement.",
-        recommended_question: "What would have to be true for this to feel like an obvious yes a month from now?",
+        emotional_signal: primary.label,
+        hidden_risk: primary.label === "Political fear"
+          ? "They will not advance this without cover from a more senior voice. You are negotiating with a proxy."
+          : primary.label === "Career risk"
+            ? "If this fails publicly, they own it. They will under-commit until they trust you absorb downside with them."
+            : primary.label === "Budget anxiety"
+              ? "Price will become the decision frame before value is anchored. Reset the frame now or lose it."
+              : primary.label === "Loss of control"
+                ? "Real decision is leaving the room. Win the absent stakeholder, not the one in front of you."
+                : primary.label === "Credibility risk"
+                  ? "You are being graded against a prior failure. Generic capability claims will harden their skepticism."
+                  : "Confidence may be masking unresolved internal disagreement.",
+        recommended_question: primary.label === "Political fear" || primary.label === "Career risk"
+          ? "Who, besides you, has to feel good about this — and what would they need to see to back it publicly?"
+          : primary.label === "Budget anxiety"
+            ? "Set budget aside for a second — what would a result worth paying for actually look like?"
+            : "What would have to be true for this to feel like an obvious yes a month from now?",
         question_to_avoid: "Don't ask 'does that make sense?' — it reads as pressure when they're hesitant.",
         recommended_next_move: risk === "red" ? "Pause — do not push" : "Ask a clarifying question",
       };
     }
     case "Is this a buying signal?": {
-      const strength = risk === "green" ? "Strong" : risk === "yellow" ? "Moderate" : "Weak";
+      // BANT-style scoring: Authority, Budget, Need, Timing — each scored separately.
+      const t = transcriptText.toLowerCase();
+      type Grade = "Strong" | "Moderate" | "Weak";
+      const grade = (strong: RegExp, moderate: RegExp): Grade =>
+        strong.test(t) ? "Strong" : moderate.test(t) ? "Moderate" : "Weak";
+      const authority = grade(
+        /i (own|decide|approve)|i'?m the (owner|decision)|sponsor is|exec sponsor|ceo (is )?backing|cfo signed/,
+        /sponsor|exec|leadership|board|recommend/,
+      );
+      const budget = grade(
+        /budget (approved|allocated|in place)|po (process|number)|procurement path|funded/,
+        /budget (tbd|range|ballpark)|directionally|finance is aware|need to confirm budget/,
+      );
+      const need = grade(
+        /must (fix|solve)|costing us|losing|urgent|critical|board (asked|wants)/,
+        /problem|issue|gap|inefficient|would help|exploring/,
+      );
+      const timing = grade(
+        /go-?live|launch by|kickoff|start (date|next)|by (q[1-4]|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/,
+        /this (quarter|year)|soon|sooner rather|in the next/,
+      );
+      const score = (g: Grade) => (g === "Strong" ? 2 : g === "Moderate" ? 1 : 0);
+      const total = score(authority) + score(budget) + score(need) + score(timing);
+      const overall: Grade = total >= 6 ? "Strong" : total >= 3 ? "Moderate" : "Weak";
+      const weakest = (
+        [
+          ["Authority", authority],
+          ["Budget", budget],
+          ["Need", need],
+          ["Timing", timing],
+        ] as [string, Grade][]
+      ).sort((a, b) => score(a[1]) - score(b[1]))[0];
       return {
         signal_type: "Buying signal",
-        risk_level: risk,
-        what_im_hearing: `${strength} buying signal. Language is ${risk === "green" ? "shifting from 'evaluating' to 'when we'd start'" : risk === "yellow" ? "still exploratory but specifics are creeping in" : "still abstract — no timing, no names, no numbers"}.`,
-        likely_true_intent: `Commercial readiness: ${strength.toLowerCase()}. Budget readiness: ${risk === "green" ? "in place" : risk === "yellow" ? "directionally approved, not allocated" : "not confirmed"}. Authority readiness: ${risk === "red" ? "single contact, no sponsor named" : "sponsor implied but not engaged"}.`,
-        emotional_signal: risk === "green" ? "Forward-leaning, time-aware" : "Interested but non-committal",
-        hidden_risk: "What kills this: a competing internal priority lands before you've secured the next concrete step.",
-        recommended_question: "If we agreed on scope this week, what would have to happen on your side to start next month?",
+        risk_level: overall === "Strong" ? "green" : overall === "Moderate" ? "yellow" : "red",
+        what_im_hearing: `${overall} buying signal. Authority: ${authority}. Budget: ${budget}. Need: ${need}. Timing: ${timing}.`,
+        likely_true_intent: `Weakest dimension is ${weakest[0]} (${weakest[1].toLowerCase()}). That is the dimension that will stall this deal, not price.`,
+        emotional_signal: overall === "Strong" ? "Forward-leaning, time-aware" : "Interested but non-committal",
+        hidden_risk: `Without ${weakest[0].toLowerCase()} confirmed, any forward motion is reversible. A competing priority will overtake this before the next concrete step.`,
+        recommended_question: weakest[0] === "Authority"
+          ? "Besides yourself, whose explicit sign-off would this need before anything starts?"
+          : weakest[0] === "Budget"
+            ? "If we agreed scope today, what's the funding path — existing budget, reallocation, or new ask?"
+            : weakest[0] === "Need"
+              ? "If you did nothing about this for 6 months, what specifically breaks?"
+              : "What's driving the timing — and what happens if it slips a quarter?",
         question_to_avoid: "Don't ask for the budget number yet — it converts a buying signal into a procurement conversation.",
-        recommended_next_move: risk === "green" ? "Close for the next concrete step" : "Confirm authority / decision process",
+        recommended_next_move: overall === "Strong" ? "Close for the next concrete step" : "Confirm authority / decision process",
       };
     }
     case "Is this a risk signal?": {
+      // Explicit scoring across Ownership, Governance, Timeline, Budget risk.
+      const t = transcriptText.toLowerCase();
+      type RiskGrade = "High" | "Medium" | "Low";
+      const score = (high: RegExp, medium: RegExp): RiskGrade =>
+        high.test(t) ? "High" : medium.test(t) ? "Medium" : "Low";
+      const ownership = score(
+        /no (owner|sponsor)|unclear who|not sure who|figure out who/,
+        /committee|team will decide|we'll align|shared ownership/,
+      );
+      const governance = score(
+        /board approval|legal review|procurement|compliance|security review|rfp/,
+        /process|approval|sign-?off|review cycle/,
+      );
+      const timeline = score(
+        /no rush|no urgency|sometime|eventually|next year|tbd/,
+        /this (quarter|year)|soon|when we can|in the next few/,
+      );
+      const budgetR = score(
+        /no budget|don'?t have budget|can'?t afford|not funded/,
+        /budget tbd|need to find|reallocate|tight|stretched/,
+      );
+      const grades: [string, RiskGrade][] = [
+        ["Ownership Risk", ownership],
+        ["Governance Risk", governance],
+        ["Timeline Risk", timeline],
+        ["Budget Risk", budgetR],
+      ];
+      const weight = (g: RiskGrade) => (g === "High" ? 2 : g === "Medium" ? 1 : 0);
+      const total = grades.reduce((s, [, g]) => s + weight(g), 0);
+      const overallRisk: Risk = total >= 4 ? "red" : total >= 2 ? "yellow" : "green";
+      const top = [...grades].sort((a, b) => weight(b[1]) - weight(a[1]))[0];
       return {
         signal_type: "Risk signal",
-        risk_level: "red" as Risk,
-        what_im_hearing: `Specific risk surfacing in ${snippet} — hedged language and references to "the team" / "process" / "later" without names or dates.`,
-        likely_true_intent: "They're flagging a blocker without naming it. Your job is to name it for them.",
+        risk_level: overallRisk,
+        what_im_hearing: grades.map(([k, g]) => `${k}: ${g}`).join(" · "),
+        likely_true_intent: `${top[0]} is the binding constraint. Everything else is downstream of it.`,
         emotional_signal: "Cautious, protective — they've seen this go wrong before.",
-        hidden_risk: "Authority risk: real decision-maker absent. Budget risk: no number, no owner. Timeline risk: 'sometime this quarter' = next quarter. Scope risk: definition still drifting. Decision-stall risk: procurement / legal hasn't been mentioned and will add weeks.",
-        recommended_question: "Walk me through the last time a project like this got stuck internally — what caused it?",
+        hidden_risk: top[0] === "Ownership Risk"
+          ? "No single throat to choke. Decisions diffuse, momentum dies in week 3."
+          : top[0] === "Governance Risk"
+            ? "Hidden review gates (legal, security, procurement) add 4–8 weeks the timeline doesn't currently reflect."
+            : top[0] === "Timeline Risk"
+              ? "Soft urgency = no urgency. Without a forcing event, this gets reprioritized."
+              : "Budget will arrive late or smaller than scoped. Plan for a phase-1 with a defensible cut line.",
+        recommended_question: top[0] === "Ownership Risk"
+          ? "If this stalled in a month, who would be the single person whose desk it would land on?"
+          : top[0] === "Governance Risk"
+            ? "Walk me through every internal gate this would have to clear before a contract is signed."
+            : top[0] === "Timeline Risk"
+              ? "What event or date — internal or external — is forcing this conversation now?"
+              : "If the funding number came in 30% lower than ideal, what's the minimum that would still be worth doing?",
         question_to_avoid: "Don't ask 'is there anything that could slow this down?' — they'll say no out of politeness.",
         recommended_next_move: "Surface a risk gently",
       };
@@ -153,42 +262,46 @@ function mockInsight(action: string, transcriptText: string) {
         signal_type: "Pacing check",
         risk_level: risk,
         what_im_hearing: tooFast
-          ? "The caller doesn't have enough clarity yet — they're answering your questions but not volunteering specifics. That's a sign you're ahead of where they are."
-          : "Caller has enough clarity to move forward — they're matching your pace and adding their own specifics.",
+          ? "Caller is answering but not volunteering specifics — you're ahead of their internal clarity."
+          : "Caller is matching your pace and adding their own specifics — pacing is aligned.",
         likely_true_intent: tooFast
-          ? "Solutioning now would lock in the wrong scope and create rework. Stay in diagnosis."
+          ? "Solutioning now would lock in the wrong scope. Stay in diagnosis."
           : "They're ready for a concrete next step; further discovery will feel like stalling.",
         emotional_signal: tooFast ? "Slightly overwhelmed — too much, too soon" : "Engaged and ready",
         hidden_risk: "If you propose scope before they own the problem, the proposal becomes the negotiation — not the solution.",
         recommended_question: tooFast
-          ? "Before we talk about how, can you tell me what 'done well' would look like from your side?"
-          : "Given what we've covered, what's the smallest concrete next step that would feel like progress?",
+          ? "Before we talk about how, what would 'done well' look like from your side?"
+          : "What's the smallest concrete next step that would feel like progress?",
         question_to_avoid: "Don't pitch the approach yet — naming a methodology hardens expectations.",
         recommended_next_move: tooFast ? "Pause — do not push" : "Close for the next concrete step",
       };
     }
     case "Should I probe, pause, or close?": {
-      const chosen: "Probe" | "Pause" | "Confirm" | "Close" =
-        risk === "red" ? "Pause" : risk === "yellow" ? "Probe" : seed % 2 === 0 ? "Confirm" : "Close";
+      // Return exactly ONE recommendation.
+      const chosen: "Probe" | "Pause" | "Close" =
+        risk === "red" ? "Pause" : risk === "yellow" ? "Probe" : "Close";
       const moveMap: Record<typeof chosen, (typeof NEXT_MOVES)[number]> = {
         Probe: "Ask a clarifying question",
         Pause: "Pause — do not push",
-        Confirm: "Confirm authority / decision process",
         Close: "Close for the next concrete step",
       };
       const questionMap: Record<typeof chosen, string> = {
         Probe: "What's the part of this you're least sure about?",
         Pause: "Want to take a moment — anything you'd like me to clarify before we go further?",
-        Confirm: "Besides yourself, whose explicit sign-off would this need before anything starts?",
         Close: "If we agree on the shape of this today, can we lock a working session for next week?",
+      };
+      const rationale: Record<typeof chosen, string> = {
+        Probe: "Enough interest to keep digging; not enough clarity to advance.",
+        Pause: "Pressure now would harden the position you just heard.",
+        Close: "All forward signals present — staying in discovery now is the bigger risk.",
       };
       return {
         signal_type: "Call-control move",
         risk_level: risk,
-        what_im_hearing: `Signal mix points to: ${chosen}. ${chosen === "Pause" ? "Pressure now would harden the position you just heard." : chosen === "Probe" ? "Enough interest to keep digging; not enough clarity to advance." : chosen === "Confirm" ? "Forward signals are real, but authority hasn't been verified." : "All forward signals present — staying in discovery now is the bigger risk."}`,
-        likely_true_intent: chosen === "Close" ? "They're waiting for you to lead the next step." : "They want more shape before committing further.",
+        what_im_hearing: `Single recommendation: ${chosen.toUpperCase()}. ${rationale[chosen]}`,
+        likely_true_intent: chosen === "Close" ? "They're waiting for you to lead the next step." : chosen === "Pause" ? "They need air before they can move." : "They want more shape before committing further.",
         emotional_signal: chosen === "Pause" ? "Guarded" : chosen === "Close" ? "Decisive" : "Engaged",
-        hidden_risk: chosen === "Close" ? "Closing without naming the sponsor leaves you exposed in week 2." : "Over-probing now reads as indecision on your side.",
+        hidden_risk: chosen === "Close" ? "Closing without naming the sponsor leaves you exposed in week 2." : chosen === "Pause" ? "Pausing too long lets a competing priority overtake this." : "Over-probing now reads as indecision on your side.",
         recommended_question: questionMap[chosen],
         question_to_avoid: "Don't ask multi-part questions right now — pick one.",
         recommended_next_move: moveMap[chosen],
