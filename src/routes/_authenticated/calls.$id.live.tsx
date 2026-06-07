@@ -220,39 +220,37 @@ function LiveRadar() {
                   <Card key={i.id} className="p-3 space-y-2">
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-[10px] font-mono text-muted-foreground">#{String(i.sequence_number).padStart(3, "0")}</div>
+                      <Badge variant="outline" className={riskClass(i.risk_level)}>{i.risk_level.toUpperCase()}</Badge>
                     </div>
                     <div className="font-semibold text-sm">{i.action_button}</div>
-                    {i.signal_type && <Insight label="Signal Type" value={i.signal_type} />}
-                    <div>
-                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Risk Level</div>
-                      <div className="mt-0.5">
-                        <Badge variant="outline" className={riskClass(i.risk_level)}>{i.risk_level.toUpperCase()}</Badge>
-                      </div>
-                    </div>
-                    <Insight label="Confidence" value={`${confidence}%`} />
-                    <div>
-                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Evidence From Transcript</div>
-                      {chunkText ? (
-                        <blockquote className="mt-0.5 text-xs border-l-2 border-primary/40 pl-2 italic text-foreground/90 whitespace-pre-wrap">
-                          "{chunkText}"
-                        </blockquote>
-                      ) : (
-                        <div className="text-xs mt-0.5 text-muted-foreground">—</div>
-                      )}
-                    </div>
+
+                    {/* 5 executive fields only */}
                     {i.what_im_hearing && <Insight label="What I'm Hearing" value={i.what_im_hearing} />}
-                    {i.likely_true_intent && <Insight label="Likely True Intent" value={i.likely_true_intent} />}
-                    {i.emotional_signal && <Insight label="Emotional Signal" value={i.emotional_signal} />}
                     {i.hidden_risk && <Insight label="Hidden Risk" value={i.hidden_risk} />}
-                    {i.recommended_question && <Insight label="Recommended Question" value={i.recommended_question} />}
-                    {i.question_to_avoid && <Insight label="Question To Avoid" value={i.question_to_avoid} />}
                     {i.recommended_next_move && (
-                      <div className="pt-1">
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommended Next Move</div>
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Recommended Move</div>
                         <span className="mt-0.5 inline-flex items-center rounded-full bg-primary/15 text-primary px-2 py-0.5 text-[11px] font-medium">
                           {i.recommended_next_move}
                         </span>
                       </div>
+                    )}
+                    {i.recommended_question && <Insight label="Recommended Question" value={i.recommended_question} />}
+                    <Insight label="Confidence" value={`${confidence}%`} />
+
+                    {/* Transcript evidence — collapsed by default */}
+                    {chunkText && (
+                      <Collapsible>
+                        <CollapsibleTrigger className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+                          <ChevronDown className="h-3 w-3 transition-transform" />
+                          Transcript evidence
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <blockquote className="mt-1 text-xs border-l-2 border-primary/40 pl-2 italic text-foreground/90 whitespace-pre-wrap">
+                            "{chunkText}"
+                          </blockquote>
+                        </CollapsibleContent>
+                      </Collapsible>
                     )}
                   </Card>
                 );
