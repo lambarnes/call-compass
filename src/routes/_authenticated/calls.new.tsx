@@ -80,8 +80,8 @@ function NewCallBrief() {
               <Label>Meeting URL <span className="text-xs text-muted-foreground font-normal">(optional — Zoom integration coming soon)</span></Label>
               <Input
                 type="url"
-                value={meetingUrl}
-                onChange={(e) => setMeetingUrl(e.target.value)}
+                value={form.zoom_meeting_link ?? ""}
+                onChange={(e) => set("zoom_meeting_link", e.target.value)}
                 placeholder="https://zoom.us/j/..."
               />
             </div>
