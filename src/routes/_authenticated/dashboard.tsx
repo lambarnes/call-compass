@@ -5,7 +5,7 @@ import { listCalls } from "@/lib/calls.functions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, Radar, FileText, Clock } from "lucide-react";
+import { PlusCircle, Radar, FileText, Clock, Library, MessageSquare } from "lucide-react";
 import { queryOptions } from "@tanstack/react-query";
 
 const callsQueryOptions = (fetchFn: any) =>
@@ -59,6 +59,22 @@ function Dashboard() {
           <div className="text-3xl font-semibold mt-2">{stats.completed}</div>
         </Card>
       </div>
+
+      <Card className="p-6 border-primary/30 bg-primary/5">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="min-w-0">
+            <div className="text-xs uppercase tracking-wider text-primary font-semibold">Beta program</div>
+            <h2 className="text-lg font-semibold mt-1">Beta Test Call Compass</h2>
+            <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+              Try a sample scenario or create your own Call Brief, then submit feedback.
+            </p>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <Button asChild variant="outline"><Link to="/samples"><Library className="h-4 w-4" /> View Sample Scenarios</Link></Button>
+            <Button asChild><Link to="/feedback"><MessageSquare className="h-4 w-4" /> Submit Feedback</Link></Button>
+          </div>
+        </div>
+      </Card>
 
       <div>
         <div className="flex items-center justify-between mb-3">

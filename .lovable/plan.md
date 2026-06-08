@@ -1,53 +1,133 @@
-## Zoom Integration — UI Shell Only
 
-Build a non-functional UI scaffold for future Zoom integration. No OAuth, no API calls, no SDKs, no token storage.
+# Beta Completion Build — Plan
 
-### Scope
+Prepare Call Compass for 25 friendly beta testers. No real Zoom work, no billing, no team accounts. Existing flows (Dashboard → New Brief → Live Radar → Summary, all 8 AI buttons, AI logic, transcript behavior) stay intact.
 
-Pure frontend presentational shell. State held in local component state only (no persistence, no schema changes). All Zoom controls are visibly marked as "Coming Soon" / disabled where they would otherwise trigger real calls.
+---
 
-### Files changed
+## A. Persist Zoom Meeting Link
 
-1. **`src/routes/_authenticated/settings.tsx`** (edit)
-   - Add a new `Card` section: **"Zoom Integration"**
-   - Contains:
-     - Status badge: `Not Connected` (default) — variants prepared for `Connected` / `Error` but hardcoded to `Not Connected` for now
-     - **Connect Zoom** button — `disabled`, with tooltip/helper text "Coming soon"
-     - Helper copy explaining future capability
-     - Error message area (`Alert` variant=destructive) — hidden by default, rendered only when local `error` state is set (no triggers wired yet)
+**Schema migration** (one migration):
+- `ALTER TABLE public.calls ADD COLUMN zoom_meeting_link text;` (nullable, no default).
+- No RLS / grant changes needed (existing policies already cover all columns).
 
-2. **`src/routes/_authenticated/calls.new.tsx`** (edit)
-   - Add **Meeting URL** input (optional) inside the existing "The call" card
-   - Stored in local form state only; **not** sent to `createCall` (no schema change). Field is purely visual scaffolding; will be wired later when schema/metadata column is added.
+**Code:**
+- `src/lib/calls.functions.ts` — add `zoom_meeting_link` to `CallBriefInput`, include in `createCall` insert and `updateCall` patch.
+- `src/routes/_authenticated/calls.new.tsx` — promote the local-only `meetingUrl` to `form.zoom_meeting_link`, persist via `createCall`.
+- `src/routes/_authenticated/calls.$id.index.tsx` — show "Zoom meeting link" row (clickable link if present) and allow editing in the brief form.
+- `src/routes/_authenticated/calls.$id.live.tsx` — show the link in the left brief panel (read-only, opens in new tab). No Zoom API calls; the "Zoom Transcript (Coming Soon)" selector stays disabled.
 
-3. **`src/routes/_authenticated/calls.$id.live.tsx`** (edit)
-   - Add a small **"Transcript Source"** selector above the existing transcript textarea:
-     - `Manual Transcript` (selected, only working option)
-     - `Zoom Transcript (Coming Soon)` (disabled `SelectItem`)
-   - Add a collapsed **"Live Zoom Transcript"** placeholder panel — shown only when Zoom source is selected (which is disabled), so effectively a static empty-state card with copy: *"Zoom live transcript will stream here once connected."*
-   - Add a hidden `Alert` slot for future Zoom connection errors (rendered only if local `zoomError` state set; no triggers).
-   - **Do not touch** any AI button logic, insight rendering, Cockpit zones, server functions, or transcript-driven AI flow.
+## B. `/beta` — Beta Testing Guide
 
-### Schema changes
+New public route: `src/routes/beta.tsx` (top-level, SSR ok, no auth gate).
 
-**None.** Meeting URL is local-only state. No new columns, no new tables, no migration. Connection status is hardcoded `Not Connected` (no `zoom_connections` table yet).
+Sections rendered with existing `Card` primitives:
+1. What Call Compass is
+2. What to test
+3. How to create a Call Brief
+4. How to use Manual Transcript mode
+5. Which 4 buttons to test first (the four listed)
+6. How to end and summarize a call
+7. How to submit feedback
 
-### UI changes
+CTA: **Start Beta Test** button. On click, check `supabase.auth.getUser()`; navigate to `/dashboard` if signed in, else `/auth`.
 
-- Settings page: +1 card (Zoom Integration) with disabled Connect button + status badge + error slot.
-- New Call Brief: +1 optional "Meeting URL" input (no backend effect).
-- Live Radar: +1 Transcript Source selector, +1 placeholder Zoom stream panel, +1 error slot.
+## C. `/samples` — Sample Scenario Library
 
-### Out of scope (explicit)
+New authenticated route: `src/routes/_authenticated/samples.tsx`.
 
-- No `@zoom/*` SDK install
-- No OAuth route, callback, or redirect handler
-- No server function for Zoom
-- No secret added (no `ZOOM_CLIENT_ID` etc.)
-- No `fetch` to `zoom.us`
-- No new DB column or migration
-- No change to existing AI / insight / Cockpit behavior
+Static array of 6 scenarios (Telecom Cybersecurity Launch, SaaS Revenue Stalled, Scope Creep Client, Budget Avoidance Prospect, Strong Buying Signal, Founder Dependency / Operator Bottleneck) defined in `src/lib/sample-scenarios.ts`. Each: `title, company, contact_role, call_type, meeting_objective, business_context, transcript, suggested_buttons[]`.
 
-### Confirmation
+Card grid; each card has **Use This Sample** button →
+1. Calls `createCall` with the scenario fields (and `transcript_session_text` preloaded with the sample transcript — already a column on `calls`).
+2. Navigates to `/calls/$id/live`.
 
-No real Zoom API calls, SDK imports, OAuth flows, or token storage will be added in this pass. Everything is static UI + local React state.
+No new server function needed — `createCall` already accepts the relevant fields; add `transcript_session_text` to `CallBriefInput` if not yet there.
+
+## D. `/feedback` — Beta Feedback Form
+
+**Schema migration** (separate migration, run together with A):
+
+```sql
+CREATE TABLE public.beta_feedback (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid,
+  name text,
+  email text,
+  role text,
+  company text,
+  scenario_tested text,
+  most_useful_button text,
+  least_useful_button text,
+  usefulness_rating int,
+  accuracy_rating int,
+  clarity_rating int,
+  would_use_again text,
+  would_pay text,
+  confusing_parts text,
+  missing_features text,
+  comments text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+GRANT SELECT, INSERT ON public.beta_feedback TO authenticated;
+GRANT ALL ON public.beta_feedback TO service_role;
+ALTER TABLE public.beta_feedback ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "feedback self insert" ON public.beta_feedback
+  FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "feedback self select" ON public.beta_feedback
+  FOR SELECT TO authenticated USING (auth.uid() = user_id);
+```
+
+No public read. No update/delete policies.
+
+**Code:**
+- `src/lib/feedback.functions.ts` — `submitFeedback` serverFn with `requireSupabaseAuth`, zod-validated input, inserts with `user_id = context.userId`.
+- `src/routes/_authenticated/feedback.tsx` — form with all listed fields (ratings as `Slider` 1–10, would_use_again / would_pay as Select Yes/Maybe/No, rest text/textarea). Toast on success, then reset.
+
+Route is authenticated so `user_id` is always set (matches RLS).
+
+## E. Sidebar Navigation
+
+Edit `src/components/app-sidebar.tsx` — add three items under Workspace:
+- `Samples` → `/samples` (Library icon)
+- `Beta Guide` → `/beta` (BookOpen icon)
+- `Feedback` → `/feedback` (MessageSquare icon)
+
+## F. Dashboard Beta CTA
+
+Edit `src/routes/_authenticated/dashboard.tsx` — add a `Card` ("Beta Test Call Compass") above or beside Recent Calls, with two buttons:
+- **View Sample Scenarios** → `/samples`
+- **Submit Feedback** → `/feedback`
+
+## G. Preservation
+
+Untouched: AI logic in `src/lib/ai.functions.ts`, the 8 action buttons & Cockpit layout in `calls.$id.live.tsx`, summary flow, settings (Zoom card stays "Not Connected" placeholder), auth, routing.
+
+No Zoom SDK, no OAuth, no token storage, no `fetch` to `zoom.us`.
+
+---
+
+## Deliverables Summary
+
+**Files added:**
+- `src/routes/beta.tsx`
+- `src/routes/_authenticated/samples.tsx`
+- `src/routes/_authenticated/feedback.tsx`
+- `src/lib/sample-scenarios.ts`
+- `src/lib/feedback.functions.ts`
+
+**Files changed:**
+- `src/lib/calls.functions.ts` (add `zoom_meeting_link`, ensure `transcript_session_text` in input)
+- `src/routes/_authenticated/calls.new.tsx` (persist Zoom link)
+- `src/routes/_authenticated/calls.$id.index.tsx` (display/edit Zoom link)
+- `src/routes/_authenticated/calls.$id.live.tsx` (show Zoom link in brief panel)
+- `src/components/app-sidebar.tsx` (3 new nav items)
+- `src/routes/_authenticated/dashboard.tsx` (Beta CTA card)
+
+**Routes added:** `/beta`, `/samples`, `/feedback`
+
+**Schema changes:**
+- `calls.zoom_meeting_link text` (nullable)
+- new table `beta_feedback` with RLS (self insert + self select only)
+
+**Zoom:** no APIs, no SDK, no OAuth, no tokens — link is a plain text field only.

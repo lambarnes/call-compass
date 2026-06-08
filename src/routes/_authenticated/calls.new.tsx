@@ -23,7 +23,6 @@ function NewCallBrief() {
   const navigate = useNavigate();
   const create = useServerFn(createCall);
   const [loading, setLoading] = useState(false);
-  const [meetingUrl, setMeetingUrl] = useState("");
   const [form, setForm] = useState<CallBriefInput>({
 
     title: "", company_name: "", contact_name: "", contact_role: "",
@@ -31,6 +30,7 @@ function NewCallBrief() {
     business_context: "", what_i_need_to_learn: "", planned_questions: "",
     known_concerns: "", risks_to_watch: "", desired_outcome: "",
     deal_stage: "First conversation", authority_status: "Unclear", budget_status: "Unclear", notes: "",
+    zoom_meeting_link: "",
   });
 
   function set<K extends keyof CallBriefInput>(k: K, v: CallBriefInput[K]) {
@@ -80,8 +80,8 @@ function NewCallBrief() {
               <Label>Meeting URL <span className="text-xs text-muted-foreground font-normal">(optional — Zoom integration coming soon)</span></Label>
               <Input
                 type="url"
-                value={meetingUrl}
-                onChange={(e) => setMeetingUrl(e.target.value)}
+                value={form.zoom_meeting_link ?? ""}
+                onChange={(e) => set("zoom_meeting_link", e.target.value)}
                 placeholder="https://zoom.us/j/..."
               />
             </div>

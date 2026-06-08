@@ -10,10 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as BetaRouteImport } from './routes/beta'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedSamplesRouteImport } from './routes/_authenticated/samples'
+import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCallsIndexRouteImport } from './routes/_authenticated/calls.index'
 import { Route as AuthenticatedCallsNewRouteImport } from './routes/_authenticated/calls.new'
@@ -25,6 +28,11 @@ import { Route as AuthenticatedCallsIdLiveRouteImport } from './routes/_authenti
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BetaRoute = BetaRouteImport.update({
+  id: '/beta',
+  path: '/beta',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -44,6 +52,16 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSamplesRoute = AuthenticatedSamplesRouteImport.update({
+  id: '/samples',
+  path: '/samples',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFeedbackRoute = AuthenticatedFeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -88,8 +106,11 @@ const AuthenticatedCallsIdLiveRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/beta': typeof BetaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
+  '/samples': typeof AuthenticatedSamplesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/calls/$id': typeof AuthenticatedCallsIdRouteWithChildren
   '/calls/new': typeof AuthenticatedCallsNewRoute
@@ -101,8 +122,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/beta': typeof BetaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
+  '/samples': typeof AuthenticatedSamplesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/calls/new': typeof AuthenticatedCallsNewRoute
   '/calls': typeof AuthenticatedCallsIndexRoute
@@ -115,8 +139,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/beta': typeof BetaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
+  '/_authenticated/samples': typeof AuthenticatedSamplesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/calls/$id': typeof AuthenticatedCallsIdRouteWithChildren
   '/_authenticated/calls/new': typeof AuthenticatedCallsNewRoute
@@ -130,8 +157,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/beta'
     | '/reset-password'
     | '/dashboard'
+    | '/feedback'
+    | '/samples'
     | '/settings'
     | '/calls/$id'
     | '/calls/new'
@@ -143,8 +173,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/beta'
     | '/reset-password'
     | '/dashboard'
+    | '/feedback'
+    | '/samples'
     | '/settings'
     | '/calls/new'
     | '/calls'
@@ -156,8 +189,11 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/beta'
     | '/reset-password'
     | '/_authenticated/dashboard'
+    | '/_authenticated/feedback'
+    | '/_authenticated/samples'
     | '/_authenticated/settings'
     | '/_authenticated/calls/$id'
     | '/_authenticated/calls/new'
@@ -171,6 +207,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  BetaRoute: typeof BetaRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
@@ -181,6 +218,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/beta': {
+      id: '/beta'
+      path: '/beta'
+      fullPath: '/beta'
+      preLoaderRoute: typeof BetaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -209,6 +253,20 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/samples': {
+      id: '/_authenticated/samples'
+      path: '/samples'
+      fullPath: '/samples'
+      preLoaderRoute: typeof AuthenticatedSamplesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/feedback': {
+      id: '/_authenticated/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof AuthenticatedFeedbackRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -280,6 +338,8 @@ const AuthenticatedCallsIdRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
+  AuthenticatedSamplesRoute: typeof AuthenticatedSamplesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedCallsIdRoute: typeof AuthenticatedCallsIdRouteWithChildren
   AuthenticatedCallsNewRoute: typeof AuthenticatedCallsNewRoute
@@ -288,6 +348,8 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
+  AuthenticatedSamplesRoute: AuthenticatedSamplesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedCallsIdRoute: AuthenticatedCallsIdRouteWithChildren,
   AuthenticatedCallsNewRoute: AuthenticatedCallsNewRoute,
@@ -301,6 +363,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  BetaRoute: BetaRoute,
   ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
