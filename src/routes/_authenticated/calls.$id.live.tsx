@@ -45,6 +45,15 @@ const ACTION_GROUPS: { label: string; actions: string[] }[] = [
   { label: "Control", actions: ["Am I moving too fast?", "What should I avoid saying?"] },
 ];
 
+const LEGACY_ACTION_LABELS = new Set(["Analyze Current Moment"]);
+const isLegacyInsight = (i: any) => LEGACY_ACTION_LABELS.has(i?.action_button);
+const latestActiveInsight = (insights: any[]) => {
+  for (let i = insights.length - 1; i >= 0; i--) {
+    if (!isLegacyInsight(insights[i])) return insights[i];
+  }
+  return null;
+};
+
 function stageLabel(r: string) {
   if (r === "red") return "Red";
   if (r === "yellow") return "Yellow";
@@ -123,7 +132,9 @@ function LiveRadar() {
     setRunning(action);
     try {
       let chunkId: string | null = null;
-      if (action === "Analyze Current Moment" && text.trim()) {
+      // Current textarea is the source of truth: if it has content, persist it
+      // as a new transcript chunk and use it as the evidence for this insight.
+      if (text.trim()) {
         const chunk = await fnSaveChunk({ data: { callId: id, text: text.trim() } });
         chunkId = chunk.id;
         await queryClient.invalidateQueries({ queryKey: ["chunks", id] });
@@ -307,7 +318,7 @@ function FieldBlock({ label, value, large = false }: { label: string; value: str
 }
 
 function CallStatusCard({ insights }: { insights: any[] }) {
-  const latest = insights[insights.length - 1];
+  const latest = latestActiveInsight(insights);
   if (!latest) {
     return (
       <Card className="p-4 border-dashed">
@@ -354,7 +365,7 @@ function CallStatusCard({ insights }: { insights: any[] }) {
 }
 
 function LatestInsightCard({ insights, chunks }: { insights: any[]; chunks: any[] }) {
-  const latest = insights[insights.length - 1];
+  const latest = latestActiveInsight(insights);
   if (!latest) return null;
   const chunkText = latest.transcript_chunk_id
     ? chunks.find((c: any) => c.id === latest.transcript_chunk_id)?.transcript_text
@@ -407,7 +418,8 @@ function LatestInsightCard({ insights, chunks }: { insights: any[]; chunks: any[
 }
 
 function InsightHistory({ insights, chunks }: { insights: any[]; chunks: any[] }) {
-  const prior = insights.slice(0, -1).reverse();
+  const latest = latestActiveInsight(insights);
+  const prior = insights.filter((i) => i.id !== latest?.id).slice().reverse();
   if (prior.length === 0) return null;
   return (
     <Collapsible>
@@ -440,6 +452,9 @@ function HistoryRow({ insight, chunks }: { insight: any; chunks: any[] }) {
         <span className="text-[10px] font-mono text-muted-foreground">#{String(insight.sequence_number).padStart(3, "0")}</span>
         <span className={`h-2 w-2 rounded-full shrink-0 ${stageDotClass(insight.risk_level)}`} />
         <span className="font-medium truncate flex-1">{insight.action_button}</span>
+        {isLegacyInsight(insight) && (
+          <span className="text-[9px] uppercase tracking-wider text-muted-foreground border border-border rounded px-1 py-0.5 shrink-0">Legacy</span>
+        )}
         {insight.recommended_next_move && (
           <span className="text-[10px] text-muted-foreground truncate max-w-[40%]">{insight.recommended_next_move}</span>
         )}
