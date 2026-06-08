@@ -87,15 +87,21 @@ function Settings() {
   );
 }
 
-type ZoomStatus = "not_connected" | "connected" | "error";
+type ZoomStatus = "not_connected" | "pending" | "connected" | "error";
 
 function ZoomIntegrationCard() {
-  const [status] = useState<ZoomStatus>("not_connected");
-  const [error] = useState<string | null>(null);
+  const fnGet = useServerFn(getProfile);
+  const { data: profile } = useSuspenseQuery(profileQ(fnGet));
+
+  const status = ((profile as any)?.zoom_auth_status ?? "not_connected") as ZoomStatus;
+  const connectedAt = (profile as any)?.zoom_auth_connected_at as string | null | undefined;
+  const email = (profile as any)?.zoom_auth_email as string | null | undefined;
 
   const statusBadge =
     status === "connected" ? (
       <Badge variant="outline" className="border-risk-green/40 text-foreground bg-risk-green/15">Connected</Badge>
+    ) : status === "pending" ? (
+      <Badge variant="outline" className="border-risk-amber/40 text-foreground bg-risk-amber/15">Pending</Badge>
     ) : status === "error" ? (
       <Badge variant="outline" className="border-risk-red/40 text-foreground bg-risk-red/15">Error</Badge>
     ) : (
@@ -107,30 +113,38 @@ function ZoomIntegrationCard() {
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Video className="h-4 w-4 text-muted-foreground" />
-          <h2 className="font-semibold">Zoom Integration</h2>
+          <h2 className="font-semibold">Zoom Authorization</h2>
         </div>
         {statusBadge}
       </div>
       <p className="text-sm text-muted-foreground">
         Connect your Zoom account to stream live meeting transcripts straight into the Radar. Coming soon — the UI is in place while the integration is being built.
       </p>
+      {status === "connected" && (email || connectedAt) && (
+        <div className="text-xs text-muted-foreground space-y-0.5">
+          {email && <div>Account: <span className="text-foreground">{email}</span></div>}
+          {connectedAt && <div>Connected: <span className="text-foreground">{new Date(connectedAt).toLocaleString()}</span></div>}
+        </div>
+      )}
+      <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-1">
+        <div className="text-xs font-medium text-foreground">Future permissions</div>
+        <ol className="text-xs text-muted-foreground list-decimal pl-4 space-y-0.5">
+          <li>Read meeting metadata</li>
+          <li>Receive live transcript stream</li>
+          <li>Match Zoom meeting to Call Compass brief</li>
+        </ol>
+      </div>
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs text-muted-foreground">No data is sent to Zoom yet.</span>
         <Button
           variant="outline"
-          disabled
-          onClick={() => toast.info("Zoom integration coming soon.")}
+          onClick={() =>
+            toast.info("Zoom authorization is not enabled yet. This beta uses manual transcript mode.")
+          }
         >
           <Video className="h-4 w-4" /> Connect Zoom
         </Button>
       </div>
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Zoom connection error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
     </Card>
   );
 }
