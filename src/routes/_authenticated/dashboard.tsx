@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
+import { useQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { listCalls, getProfile } from "@/lib/calls.functions";
@@ -29,8 +29,8 @@ function Dashboard() {
   const fetchCalls = useServerFn(listCalls);
   const fetchProfile = useServerFn(getProfile);
   const queryClient = useQueryClient();
-  const { data: calls } = useSuspenseQuery(callsQueryOptions(fetchCalls));
-  const { data: profile } = useSuspenseQuery(profileQueryOptions(fetchProfile));
+  const { data: calls = [] } = useQuery({ ...callsQueryOptions(fetchCalls), retry: 1 });
+  const { data: profile = null } = useQuery({ ...profileQueryOptions(fetchProfile), retry: 1 });
   const recent = calls.slice(0, 5);
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
@@ -168,7 +168,9 @@ function Dashboard() {
 }
 
 Route.options.loader = async ({ context }) => {
-  await Promise.all([
+  // Non-blocking prefetch — never break the route if the session/token isn't
+  // ready yet or a serverFn 401s on the first call right after sign-in.
+  await Promise.allSettled([
     context.queryClient.ensureQueryData(callsQueryOptions(listCalls)),
     context.queryClient.ensureQueryData(profileQueryOptions(getProfile)),
   ]);

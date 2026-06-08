@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions, useQueryClient } from "@tanstack/react-query";
+import { useQuery, queryOptions, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
 import { getProfile } from "@/lib/calls.functions";
@@ -15,7 +15,7 @@ const profileQ = (fn: any) =>
 
 export const Route = createFileRoute("/_authenticated/zoom/connect")({
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(profileQ(getProfile));
+    await context.queryClient.ensureQueryData(profileQ(getProfile)).catch(() => null);
   },
   component: ZoomConnect,
 });
@@ -25,7 +25,7 @@ function ZoomConnect() {
   const queryClient = useQueryClient();
   const fnGet = useServerFn(getProfile);
   const fnStart = useServerFn(startZoomOAuth);
-  const { data: profile } = useSuspenseQuery(profileQ(fnGet));
+  const { data: profile = null } = useQuery({ ...profileQ(fnGet), retry: 1 });
   const [loading, setLoading] = useState(false);
   const [errorParam, setErrorParam] = useState<string | null>(null);
 

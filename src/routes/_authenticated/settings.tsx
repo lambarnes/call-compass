@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions, useQueryClient } from "@tanstack/react-query";
+import { useQuery, queryOptions, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { getProfile, updateProfile } from "@/lib/calls.functions";
@@ -18,7 +18,9 @@ const profileQ = (fn: any) =>
   queryOptions({ queryKey: ["profile"], queryFn: () => fn() });
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  loader: async ({ context }) => { await context.queryClient.ensureQueryData(profileQ(getProfile)); },
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(profileQ(getProfile)).catch(() => null);
+  },
   component: Settings,
 });
 
@@ -27,7 +29,7 @@ function Settings() {
   const fnUpd = useServerFn(updateProfile);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { data: profile } = useSuspenseQuery(profileQ(fnGet));
+  const { data: profile = null } = useQuery({ ...profileQ(fnGet), retry: 1 });
 
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
   const [company, setCompany] = useState(profile?.company_name ?? "");
@@ -92,7 +94,7 @@ type ZoomStatus = "not_connected" | "pending" | "connected" | "error";
 function ZoomIntegrationCard() {
   const fnGet = useServerFn(getProfile);
   const fnStart = useServerFn(startZoomOAuth);
-  const { data: profile } = useSuspenseQuery(profileQ(fnGet));
+  const { data: profile = null } = useQuery({ ...profileQ(fnGet), retry: 1 });
   const [loading, setLoading] = useState(false);
 
   const status = ((profile as any)?.zoom_auth_status ?? "not_connected") as ZoomStatus;
