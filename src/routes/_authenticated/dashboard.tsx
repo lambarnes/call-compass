@@ -5,7 +5,7 @@ import { listCalls } from "@/lib/calls.functions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, Radar, FileText, Clock } from "lucide-react";
+import { PlusCircle, Radar, FileText, Clock, Library, MessageSquare } from "lucide-react";
 import { queryOptions } from "@tanstack/react-query";
 
 const callsQueryOptions = (fetchFn: any) =>
