@@ -22,6 +22,7 @@ import { Route as AuthenticatedCallsIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedCallsNewRouteImport } from './routes/_authenticated/calls.new'
 import { Route as AuthenticatedCallsIdRouteImport } from './routes/_authenticated/calls.$id'
 import { Route as AuthenticatedCallsIdIndexRouteImport } from './routes/_authenticated/calls.$id.index'
+import { Route as ApiPublicZoomCallbackRouteImport } from './routes/api/public/zoom/callback'
 import { Route as AuthenticatedCallsIdSummaryRouteImport } from './routes/_authenticated/calls.$id.summary'
 import { Route as AuthenticatedCallsIdLiveRouteImport } from './routes/_authenticated/calls.$id.live'
 
@@ -90,6 +91,11 @@ const AuthenticatedCallsIdIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedCallsIdRoute,
   } as any)
+const ApiPublicZoomCallbackRoute = ApiPublicZoomCallbackRouteImport.update({
+  id: '/api/public/zoom/callback',
+  path: '/api/public/zoom/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedCallsIdSummaryRoute =
   AuthenticatedCallsIdSummaryRouteImport.update({
     id: '/summary',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/calls/': typeof AuthenticatedCallsIndexRoute
   '/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
   '/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
+  '/api/public/zoom/callback': typeof ApiPublicZoomCallbackRoute
   '/calls/$id/': typeof AuthenticatedCallsIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/calls': typeof AuthenticatedCallsIndexRoute
   '/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
   '/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
+  '/api/public/zoom/callback': typeof ApiPublicZoomCallbackRoute
   '/calls/$id': typeof AuthenticatedCallsIdIndexRoute
 }
 export interface FileRoutesById {
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/_authenticated/calls/': typeof AuthenticatedCallsIndexRoute
   '/_authenticated/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
   '/_authenticated/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
+  '/api/public/zoom/callback': typeof ApiPublicZoomCallbackRoute
   '/_authenticated/calls/$id/': typeof AuthenticatedCallsIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/calls/'
     | '/calls/$id/live'
     | '/calls/$id/summary'
+    | '/api/public/zoom/callback'
     | '/calls/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/calls'
     | '/calls/$id/live'
     | '/calls/$id/summary'
+    | '/api/public/zoom/callback'
     | '/calls/$id'
   id:
     | '__root__'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/_authenticated/calls/'
     | '/_authenticated/calls/$id/live'
     | '/_authenticated/calls/$id/summary'
+    | '/api/public/zoom/callback'
     | '/_authenticated/calls/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -209,6 +221,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BetaRoute: typeof BetaRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicZoomCallbackRoute: typeof ApiPublicZoomCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -304,6 +317,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCallsIdIndexRouteImport
       parentRoute: typeof AuthenticatedCallsIdRoute
     }
+    '/api/public/zoom/callback': {
+      id: '/api/public/zoom/callback'
+      path: '/api/public/zoom/callback'
+      fullPath: '/api/public/zoom/callback'
+      preLoaderRoute: typeof ApiPublicZoomCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/calls/$id/summary': {
       id: '/_authenticated/calls/$id/summary'
       path: '/summary'
@@ -365,6 +385,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BetaRoute: BetaRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicZoomCallbackRoute: ApiPublicZoomCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
