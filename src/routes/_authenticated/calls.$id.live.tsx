@@ -452,6 +452,9 @@ function HistoryRow({ insight, chunks }: { insight: any; chunks: any[] }) {
         <span className="text-[10px] font-mono text-muted-foreground">#{String(insight.sequence_number).padStart(3, "0")}</span>
         <span className={`h-2 w-2 rounded-full shrink-0 ${stageDotClass(insight.risk_level)}`} />
         <span className="font-medium truncate flex-1">{insight.action_button}</span>
+        {isLegacyInsight(insight) && (
+          <span className="text-[9px] uppercase tracking-wider text-muted-foreground border border-border rounded px-1 py-0.5 shrink-0">Legacy</span>
+        )}
         {insight.recommended_next_move && (
           <span className="text-[10px] text-muted-foreground truncate max-w-[40%]">{insight.recommended_next_move}</span>
         )}
