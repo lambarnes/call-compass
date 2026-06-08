@@ -161,11 +161,21 @@ export const getProfile = createServerFn({ method: "GET" })
 
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { full_name?: string; company_name?: string; role?: string }) =>
+  .inputValidator((d: {
+    full_name?: string;
+    company_name?: string;
+    role?: string;
+    zoom_auth_status?: "not_connected" | "pending" | "connected" | "error";
+    zoom_auth_connected_at?: string | null;
+    zoom_auth_email?: string | null;
+  }) =>
     z.object({
       full_name: z.string().max(200).optional(),
       company_name: z.string().max(200).optional(),
       role: z.string().max(200).optional(),
+      zoom_auth_status: z.enum(["not_connected", "pending", "connected", "error"]).optional(),
+      zoom_auth_connected_at: z.string().max(64).nullable().optional(),
+      zoom_auth_email: z.string().max(320).nullable().optional(),
     }).parse(d)
   )
   .handler(async ({ data, context }) => {
