@@ -36,7 +36,7 @@ export function AppSidebar() {
           <div className="h-8 w-8 rounded-md bg-primary/15 flex items-center justify-center shrink-0">
             <Radar className="h-4 w-4 text-primary" />
           </div>
-          <span className="font-display font-semibold tracking-tight">Live Call Radar</span>
+          <span className="font-display font-semibold tracking-tight">Call Compass</span>
         </div>
       </SidebarHeader>
       <SidebarContent>

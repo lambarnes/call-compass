@@ -86,7 +86,7 @@ function AuthPage() {
           <div className="h-10 w-10 rounded-lg bg-primary/15 flex items-center justify-center">
             <Radar className="h-5 w-5 text-primary" />
           </div>
-          <span className="font-display font-semibold text-lg">Live Call Radar</span>
+          <span className="font-display font-semibold text-lg">Call Compass</span>
         </div>
         <Card className="p-6 space-y-5">
           <div>
