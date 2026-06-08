@@ -65,7 +65,7 @@ export const Route = createFileRoute("/api/public/zoom/callback")({
           });
           if (!meRes.ok) {
             const txt = await meRes.text();
-            console.error("[zoom-callback] users/me/email failed", meRes.status, txt);
+            console.error("[zoom-callback] users/me failed", meRes.status, txt);
             const detail = encodeURIComponent(txt.slice(0, 200));
             return redirect(`/zoom/connect?error=users_me_failed&status=${meRes.status}&detail=${detail}`);
           }
