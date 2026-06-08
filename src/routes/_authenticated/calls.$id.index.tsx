@@ -91,6 +91,14 @@ function CallDetail() {
         <Field label="Company Name" value={call.company_name} />
         <Field label="Contact Name" value={call.contact_name} />
         <Field label="Contact Role" value={call.contact_role} />
+        {call.zoom_meeting_link && (
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Zoom Meeting Link</div>
+            <a href={call.zoom_meeting_link} target="_blank" rel="noreferrer" className="mt-1 text-sm text-primary underline break-all inline-block">
+              {call.zoom_meeting_link}
+            </a>
+          </div>
+        )}
       </Card>
 
       <Card className="p-6 space-y-4">
