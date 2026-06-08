@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, PlusCircle, ListMusic, Settings, LogOut, Radar } from "lucide-react";
+import { LayoutDashboard, PlusCircle, ListMusic, Settings, LogOut, Radar, Library, BookOpen, MessageSquare } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
@@ -11,6 +11,9 @@ const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "New Call", url: "/calls/new", icon: PlusCircle },
   { title: "Saved Calls", url: "/calls", icon: ListMusic },
+  { title: "Samples", url: "/samples", icon: Library },
+  { title: "Beta Guide", url: "/beta", icon: BookOpen },
+  { title: "Feedback", url: "/feedback", icon: MessageSquare },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
