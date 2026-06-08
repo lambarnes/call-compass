@@ -99,7 +99,7 @@ export type Database = {
           role: string | null
           scenario_tested: string | null
           usefulness_rating: number | null
-          user_id: string | null
+          user_id: string
           would_pay: string | null
           would_use_again: string | null
         }
@@ -119,7 +119,7 @@ export type Database = {
           role?: string | null
           scenario_tested?: string | null
           usefulness_rating?: number | null
-          user_id?: string | null
+          user_id: string
           would_pay?: string | null
           would_use_again?: string | null
         }
@@ -139,7 +139,7 @@ export type Database = {
           role?: string | null
           scenario_tested?: string | null
           usefulness_rating?: number | null
-          user_id?: string | null
+          user_id?: string
           would_pay?: string | null
           would_use_again?: string | null
         }

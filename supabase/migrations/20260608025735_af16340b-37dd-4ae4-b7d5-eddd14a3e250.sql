@@ -1,0 +1,1 @@
+ALTER TABLE public.beta_feedback ALTER COLUMN user_id SET NOT NULL;
