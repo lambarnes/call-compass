@@ -123,7 +123,9 @@ function LiveRadar() {
     setRunning(action);
     try {
       let chunkId: string | null = null;
-      if (action === "Analyze Current Moment" && text.trim()) {
+      // Current textarea is the source of truth: if it has content, persist it
+      // as a new transcript chunk and use it as the evidence for this insight.
+      if (text.trim()) {
         const chunk = await fnSaveChunk({ data: { callId: id, text: text.trim() } });
         chunkId = chunk.id;
         await queryClient.invalidateQueries({ queryKey: ["chunks", id] });
