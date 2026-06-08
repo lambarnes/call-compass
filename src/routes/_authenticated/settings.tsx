@@ -29,7 +29,7 @@ function Settings() {
   const fnUpd = useServerFn(updateProfile);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { data: profile } = useSuspenseQuery(profileQ(fnGet));
+  const { data: profile = null } = useQuery({ ...profileQ(fnGet), retry: 1 });
 
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
   const [company, setCompany] = useState(profile?.company_name ?? "");
