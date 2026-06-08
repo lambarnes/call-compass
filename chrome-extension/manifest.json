@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Call Compass – Live Caption Bridge",
+  "version": "0.0.1",
+  "description": "Capture live Zoom captions and send to Call Compass",
+  "permissions": ["scripting", "tabs", "storage"],
+  "host_permissions": ["https://zoom.us/*", "https://*.zoom.us/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://zoom.us/wc/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Call Compass Caption Bridge"
+  }
+}

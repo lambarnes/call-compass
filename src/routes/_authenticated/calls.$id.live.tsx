@@ -7,6 +7,8 @@ import {
   saveTranscriptChunk, updateTranscriptSession, updateCall,
 } from "@/lib/calls.functions";
 import { generateLiveInsight } from "@/lib/ai.functions";
+import { generateLiveIngestToken } from "@/lib/live-caption.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -111,7 +113,11 @@ function LiveRadar() {
   const [running, setRunning] = useState<string | null>(null);
   const [transcriptSource, setTranscriptSource] = useState<"manual" | "zoom">("manual");
   const [zoomError] = useState<string | null>(null);
+  const [liveIngestToken, setLiveIngestToken] = useState<string | null>(null);
+  const [showTokenModal, setShowTokenModal] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fnGenerateToken = useServerFn(generateLiveIngestToken);
 
 
   useEffect(() => {
@@ -122,11 +128,54 @@ function LiveRadar() {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [text, id, fnUpdateSession]);
 
+  useEffect(() => {
+    if (transcriptSource !== "zoom") return;
+
+    const channel = supabase
+      .channel(`calls:${id}:transcripts`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "transcript_chunks",
+          filter: `call_id=eq.${id}`,
+        },
+        (payload: any) => {
+          const chunk = payload.new;
+          if (chunk?.source === "zoom_transcript_future") {
+            setText((prev) => {
+              if (prev.trim().length > 0) {
+                return prev + "\n" + chunk.transcript_text;
+              }
+              return chunk.transcript_text;
+            });
+            queryClient.invalidateQueries({ queryKey: ["chunks", id] });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [transcriptSource, id, queryClient]);
+
   async function saveSegment() {
     if (!text.trim()) { toast.error("Nothing to save."); return; }
     await fnSaveChunk({ data: { callId: id, text: text.trim() } });
     await queryClient.invalidateQueries({ queryKey: ["chunks", id] });
     toast.success("Transcript segment saved.");
+  }
+
+  async function enableZoomCaptions() {
+    try {
+      const result = await fnGenerateToken({ data: { callId: id } });
+      setLiveIngestToken(result.token);
+      setShowTokenModal(true);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate token");
+    }
   }
 
   async function runAction(action: string) {
@@ -214,20 +263,42 @@ function LiveRadar() {
                 <SelectTrigger className="h-7 w-[220px] text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="manual">Manual Transcript</SelectItem>
-                  <SelectItem value="zoom" disabled>Zoom Transcript (Coming Soon)</SelectItem>
+                  <SelectItem value="zoom" disabled={!liveIngestToken}>Zoom Transcript</SelectItem>
                 </SelectContent>
               </Select>
+              {transcriptSource === "manual" && !liveIngestToken && (
+                <Button size="sm" variant="outline" onClick={enableZoomCaptions} className="h-7 text-xs">
+                  Enable Zoom
+                </Button>
+              )}
             </div>
             <div className="text-xs text-muted-foreground">
               {transcriptSource === "manual"
                 ? "Live transcript input — paste or type what you hear."
-                : "Zoom live transcript will stream here once connected."}
+                : "Zoom live transcript will stream here once connected. Install the extension and enter your token."}
             </div>
             {zoomError && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Zoom connection error</AlertTitle>
                 <AlertDescription>{zoomError}</AlertDescription>
+              </Alert>
+            )}
+            {showTokenModal && liveIngestToken && (
+              <Alert className="border-primary/40 bg-primary/5">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Zoom Caption Token</AlertTitle>
+                <AlertDescription>
+                  <div className="mt-2 space-y-2">
+                    <p>Install the Call Compass Chrome extension and enter this token:</p>
+                    <code className="block bg-card p-2 rounded text-sm font-mono break-all">{liveIngestToken}</code>
+                    <p className="text-xs text-muted-foreground">
+                      <a href="https://github.com/your-org/call-compass-zoom-extension" target="_blank" rel="noreferrer" className="underline">
+                        Get the extension
+                      </a>
+                    </p>
+                  </div>
+                </AlertDescription>
               </Alert>
             )}
           </div>
