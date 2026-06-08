@@ -168,5 +168,8 @@ function Dashboard() {
 }
 
 Route.options.loader = async ({ context }) => {
-  await context.queryClient.ensureQueryData(callsQueryOptions(listCalls));
+  await Promise.all([
+    context.queryClient.ensureQueryData(callsQueryOptions(listCalls)),
+    context.queryClient.ensureQueryData(profileQueryOptions(getProfile)),
+  ]);
 };
