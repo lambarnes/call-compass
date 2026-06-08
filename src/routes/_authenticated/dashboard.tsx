@@ -1,15 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { useSuspenseQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listCalls } from "@/lib/calls.functions";
+import { useEffect, useState } from "react";
+import { listCalls, getProfile } from "@/lib/calls.functions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, Radar, FileText, Clock, Library, MessageSquare } from "lucide-react";
-import { queryOptions } from "@tanstack/react-query";
+import { PlusCircle, Radar, FileText, Clock, Library, MessageSquare, Video, X, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 
 const callsQueryOptions = (fetchFn: any) =>
   queryOptions({ queryKey: ["calls"], queryFn: () => fetchFn() });
+const profileQueryOptions = (fn: any) =>
+  queryOptions({ queryKey: ["profile"], queryFn: () => fn() });
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
