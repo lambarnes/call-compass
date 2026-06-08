@@ -1,18 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
+import { useQuery, queryOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
-import { listCalls, getProfile } from "@/lib/calls.functions";
+import { listCalls } from "@/lib/calls.functions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, Radar, FileText, Clock, Library, MessageSquare, Video, X, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
+import { PlusCircle, Radar, Clock, Library, MessageSquare } from "lucide-react";
 
 const callsQueryOptions = (fetchFn: any) =>
   queryOptions({ queryKey: ["calls"], queryFn: () => fetchFn() });
-const profileQueryOptions = (fn: any) =>
-  queryOptions({ queryKey: ["profile"], queryFn: () => fn() });
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -26,29 +22,9 @@ function statusColor(s: string) {
 }
 
 function Dashboard() {
-  console.log("[diag] dashboard render start");
   const fetchCalls = useServerFn(listCalls);
-  const fetchProfile = useServerFn(getProfile);
-  const queryClient = useQueryClient();
   const { data: calls = [] } = useQuery({ ...callsQueryOptions(fetchCalls), retry: 1 });
-  const { data: profile = null } = useQuery({ ...profileQueryOptions(fetchProfile), retry: 1 });
   const recent = calls.slice(0, 5);
-  const [bannerDismissed, setBannerDismissed] = useState(false);
-
-  const zoomStatus = ((profile as any)?.zoom_auth_status ?? "not_connected") as
-    | "not_connected" | "pending" | "connected" | "error";
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const p = new URLSearchParams(window.location.search);
-    if (p.get("zoom") === "connected") {
-      toast.success("Zoom account connected.");
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      const url = new URL(window.location.href);
-      url.searchParams.delete("zoom");
-      window.history.replaceState({}, "", url.toString());
-    }
-  }, [queryClient]);
 
   const stats = {
     total: calls.length,
@@ -56,13 +32,7 @@ function Dashboard() {
     completed: calls.filter((c: any) => c.status === "completed" || c.status === "follow_up_done").length,
   };
 
-  const showZoomBanner = !bannerDismissed && zoomStatus !== "connected";
-
   return (
-    <>
-    <div style={{ background: "#ffeb00", color: "#000", padding: 16, fontWeight: 700, fontSize: 18 }}>
-      DASHBOARD STATIC TEST
-    </div>
     <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
@@ -73,44 +43,6 @@ function Dashboard() {
           <Link to="/calls/new"><PlusCircle className="h-4 w-4" /> New Call Brief</Link>
         </Button>
       </div>
-
-      <Card className="p-4 border-primary/30 bg-primary/5 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-sm font-medium">Zoom Connect Test</div>
-        </div>
-        <Button asChild size="sm" variant="outline">
-          <Link to="/zoom/connect">Open Zoom Connect Test</Link>
-        </Button>
-      </Card>
-
-      {showZoomBanner && (
-        <Card className="p-4 border-primary/30 bg-primary/5 flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 min-w-0">
-            <Video className="h-4 w-4 mt-0.5 text-primary shrink-0" />
-            <div className="min-w-0">
-              <div className="text-sm font-medium">Connect your Zoom account</div>
-              <div className="text-xs text-muted-foreground mt-0.5">
-                Optional. Manual transcript mode still works without it.
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button asChild size="sm" variant="outline">
-              <Link to="/zoom/connect">Connect</Link>
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setBannerDismissed(true)} aria-label="Dismiss">
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </Card>
-      )}
-      {zoomStatus === "connected" && (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <CheckCircle2 className="h-3.5 w-3.5 text-risk-green" />
-          Zoom connected
-          {(profile as any)?.zoom_auth_email && <span>· {(profile as any).zoom_auth_email}</span>}
-        </div>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-5">
@@ -178,15 +110,9 @@ function Dashboard() {
         )}
       </div>
     </div>
-    </>
   );
 }
 
 Route.options.loader = async ({ context }) => {
-  // Non-blocking prefetch — never break the route if the session/token isn't
-  // ready yet or a serverFn 401s on the first call right after sign-in.
-  await Promise.allSettled([
-    context.queryClient.ensureQueryData(callsQueryOptions(listCalls)),
-    context.queryClient.ensureQueryData(profileQueryOptions(getProfile)),
-  ]);
+  await context.queryClient.ensureQueryData(callsQueryOptions(listCalls)).catch(() => null);
 };
