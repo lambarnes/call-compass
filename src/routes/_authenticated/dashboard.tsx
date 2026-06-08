@@ -168,7 +168,9 @@ function Dashboard() {
 }
 
 Route.options.loader = async ({ context }) => {
-  await Promise.all([
+  // Non-blocking prefetch — never break the route if the session/token isn't
+  // ready yet or a serverFn 401s on the first call right after sign-in.
+  await Promise.allSettled([
     context.queryClient.ensureQueryData(callsQueryOptions(listCalls)),
     context.queryClient.ensureQueryData(profileQueryOptions(getProfile)),
   ]);
