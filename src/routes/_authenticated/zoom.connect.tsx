@@ -25,7 +25,7 @@ function ZoomConnect() {
   const queryClient = useQueryClient();
   const fnGet = useServerFn(getProfile);
   const fnStart = useServerFn(startZoomOAuth);
-  const { data: profile } = useSuspenseQuery(profileQ(fnGet));
+  const { data: profile = null } = useQuery({ ...profileQ(fnGet), retry: 1 });
   const [loading, setLoading] = useState(false);
   const [errorParam, setErrorParam] = useState<string | null>(null);
 
