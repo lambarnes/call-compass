@@ -175,6 +175,14 @@ function LiveRadar() {
         {/* Left: brief */}
         <div className="border-r border-border overflow-y-auto p-4 space-y-3 hidden lg:block">
           <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Call brief</div>
+          {call.zoom_meeting_link && (
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Zoom link</div>
+              <a href={call.zoom_meeting_link} target="_blank" rel="noreferrer" className="mt-0.5 text-xs text-primary underline break-all inline-block">
+                {call.zoom_meeting_link}
+              </a>
+            </div>
+          )}
           <BriefField label="Objective" value={call.meeting_objective} />
           <BriefField label="What to learn" value={call.what_i_need_to_learn} />
           <BriefField label="Planned questions" value={call.planned_questions} />
