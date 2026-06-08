@@ -15,7 +15,7 @@ const profileQ = (fn: any) =>
 
 export const Route = createFileRoute("/_authenticated/zoom/connect")({
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(profileQ(getProfile));
+    await context.queryClient.ensureQueryData(profileQ(getProfile)).catch(() => null);
   },
   component: ZoomConnect,
 });
