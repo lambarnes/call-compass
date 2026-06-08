@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { verifySignedState } from "@/lib/zoom.functions";
+import { verifySignedState } from "@/lib/zoom.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 function redirect(url: string) {
