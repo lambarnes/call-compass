@@ -34,11 +34,10 @@ function ZoomConnect() {
     const p = new URLSearchParams(window.location.search);
     const err = p.get("error");
     if (err) setErrorParam(err);
-  }, []);
-
-  // Refresh profile in case callback just connected
-  useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ["profile"] });
+    // Only refresh profile when we just returned from Zoom callback
+    if (p.get("zoom") === "connected") {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    }
   }, [queryClient]);
 
   const status = ((profile as any)?.zoom_auth_status ?? "not_connected") as
