@@ -365,7 +365,7 @@ function CallStatusCard({ insights }: { insights: any[] }) {
 }
 
 function LatestInsightCard({ insights, chunks }: { insights: any[]; chunks: any[] }) {
-  const latest = insights[insights.length - 1];
+  const latest = latestActiveInsight(insights);
   if (!latest) return null;
   const chunkText = latest.transcript_chunk_id
     ? chunks.find((c: any) => c.id === latest.transcript_chunk_id)?.transcript_text
