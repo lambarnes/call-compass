@@ -306,6 +306,9 @@ export type Database = {
           id: string
           role: string | null
           updated_at: string
+          zoom_auth_connected_at: string | null
+          zoom_auth_email: string | null
+          zoom_auth_status: string
         }
         Insert: {
           company_name?: string | null
@@ -314,6 +317,9 @@ export type Database = {
           id: string
           role?: string | null
           updated_at?: string
+          zoom_auth_connected_at?: string | null
+          zoom_auth_email?: string | null
+          zoom_auth_status?: string
         }
         Update: {
           company_name?: string | null
@@ -322,6 +328,9 @@ export type Database = {
           id?: string
           role?: string | null
           updated_at?: string
+          zoom_auth_connected_at?: string | null
+          zoom_auth_email?: string | null
+          zoom_auth_status?: string
         }
         Relationships: []
       }
