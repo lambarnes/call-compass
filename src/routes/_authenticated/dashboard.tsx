@@ -29,8 +29,8 @@ function Dashboard() {
   const fetchCalls = useServerFn(listCalls);
   const fetchProfile = useServerFn(getProfile);
   const queryClient = useQueryClient();
-  const { data: calls } = useSuspenseQuery(callsQueryOptions(fetchCalls));
-  const { data: profile } = useSuspenseQuery(profileQueryOptions(fetchProfile));
+  const { data: calls = [] } = useQuery({ ...callsQueryOptions(fetchCalls), retry: 1 });
+  const { data: profile = null } = useQuery({ ...profileQueryOptions(fetchProfile), retry: 1 });
   const recent = calls.slice(0, 5);
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
