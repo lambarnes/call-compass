@@ -59,8 +59,8 @@ export const Route = createFileRoute("/api/public/zoom/callback")({
             return redirect("/zoom/connect?error=no_access_token");
           }
 
-          // Fetch Zoom user email (scoped endpoint for user:read:email)
-          const meRes = await fetch("https://api.zoom.us/v2/users/me/email", {
+          // Fetch Zoom user profile
+          const meRes = await fetch("https://api.zoom.us/v2/users/me", {
             headers: { Authorization: `Bearer ${accessToken}` },
           });
           if (!meRes.ok) {
