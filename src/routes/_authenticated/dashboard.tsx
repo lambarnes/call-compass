@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { listCalls, getProfile } from "@/lib/calls.functions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
