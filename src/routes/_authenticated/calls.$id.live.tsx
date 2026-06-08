@@ -418,7 +418,8 @@ function LatestInsightCard({ insights, chunks }: { insights: any[]; chunks: any[
 }
 
 function InsightHistory({ insights, chunks }: { insights: any[]; chunks: any[] }) {
-  const prior = insights.slice(0, -1).reverse();
+  const latest = latestActiveInsight(insights);
+  const prior = insights.filter((i) => i.id !== latest?.id).slice().reverse();
   if (prior.length === 0) return null;
   return (
     <Collapsible>
