@@ -26,6 +26,7 @@ function statusColor(s: string) {
 }
 
 function Dashboard() {
+  console.log("[diag] dashboard render start");
   const fetchCalls = useServerFn(listCalls);
   const fetchProfile = useServerFn(getProfile);
   const queryClient = useQueryClient();
@@ -58,6 +59,10 @@ function Dashboard() {
   const showZoomBanner = !bannerDismissed && zoomStatus !== "connected";
 
   return (
+    <>
+    <div style={{ background: "#ffeb00", color: "#000", padding: 16, fontWeight: 700, fontSize: 18 }}>
+      DASHBOARD STATIC TEST
+    </div>
     <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
@@ -173,6 +178,7 @@ function Dashboard() {
         )}
       </div>
     </div>
+    </>
   );
 }
 
