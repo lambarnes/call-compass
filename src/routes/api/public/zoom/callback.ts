@@ -59,13 +59,13 @@ export const Route = createFileRoute("/api/public/zoom/callback")({
             return redirect("/zoom/connect?error=no_access_token");
           }
 
-          // Fetch Zoom user email (scoped endpoint for user:read:email)
-          const meRes = await fetch("https://api.zoom.us/v2/users/me/email", {
+          // Fetch Zoom user profile
+          const meRes = await fetch("https://api.zoom.us/v2/users/me", {
             headers: { Authorization: `Bearer ${accessToken}` },
           });
           if (!meRes.ok) {
             const txt = await meRes.text();
-            console.error("[zoom-callback] users/me/email failed", meRes.status, txt);
+            console.error("[zoom-callback] users/me failed", meRes.status, txt);
             const detail = encodeURIComponent(txt.slice(0, 200));
             return redirect(`/zoom/connect?error=users_me_failed&status=${meRes.status}&detail=${detail}`);
           }
