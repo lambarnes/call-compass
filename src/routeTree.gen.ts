@@ -19,6 +19,7 @@ import { Route as AuthenticatedSamplesRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCallsIndexRouteImport } from './routes/_authenticated/calls.index'
+import { Route as AuthenticatedZoomConnectRouteImport } from './routes/_authenticated/zoom.connect'
 import { Route as AuthenticatedCallsNewRouteImport } from './routes/_authenticated/calls.new'
 import { Route as AuthenticatedCallsIdRouteImport } from './routes/_authenticated/calls.$id'
 import { Route as AuthenticatedCallsIdIndexRouteImport } from './routes/_authenticated/calls.$id.index'
@@ -75,6 +76,12 @@ const AuthenticatedCallsIndexRoute = AuthenticatedCallsIndexRouteImport.update({
   path: '/calls/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedZoomConnectRoute =
+  AuthenticatedZoomConnectRouteImport.update({
+    id: '/zoom/connect',
+    path: '/zoom/connect',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCallsNewRoute = AuthenticatedCallsNewRouteImport.update({
   id: '/calls/new',
   path: '/calls/new',
@@ -120,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/calls/$id': typeof AuthenticatedCallsIdRouteWithChildren
   '/calls/new': typeof AuthenticatedCallsNewRoute
+  '/zoom/connect': typeof AuthenticatedZoomConnectRoute
   '/calls/': typeof AuthenticatedCallsIndexRoute
   '/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
   '/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
@@ -136,6 +144,7 @@ export interface FileRoutesByTo {
   '/samples': typeof AuthenticatedSamplesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/calls/new': typeof AuthenticatedCallsNewRoute
+  '/zoom/connect': typeof AuthenticatedZoomConnectRoute
   '/calls': typeof AuthenticatedCallsIndexRoute
   '/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
   '/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
@@ -155,6 +164,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/calls/$id': typeof AuthenticatedCallsIdRouteWithChildren
   '/_authenticated/calls/new': typeof AuthenticatedCallsNewRoute
+  '/_authenticated/zoom/connect': typeof AuthenticatedZoomConnectRoute
   '/_authenticated/calls/': typeof AuthenticatedCallsIndexRoute
   '/_authenticated/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
   '/_authenticated/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/calls/$id'
     | '/calls/new'
+    | '/zoom/connect'
     | '/calls/'
     | '/calls/$id/live'
     | '/calls/$id/summary'
@@ -190,6 +201,7 @@ export interface FileRouteTypes {
     | '/samples'
     | '/settings'
     | '/calls/new'
+    | '/zoom/connect'
     | '/calls'
     | '/calls/$id/live'
     | '/calls/$id/summary'
@@ -208,6 +220,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/calls/$id'
     | '/_authenticated/calls/new'
+    | '/_authenticated/zoom/connect'
     | '/_authenticated/calls/'
     | '/_authenticated/calls/$id/live'
     | '/_authenticated/calls/$id/summary'
@@ -296,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCallsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/zoom/connect': {
+      id: '/_authenticated/zoom/connect'
+      path: '/zoom/connect'
+      fullPath: '/zoom/connect'
+      preLoaderRoute: typeof AuthenticatedZoomConnectRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/calls/new': {
       id: '/_authenticated/calls/new'
       path: '/calls/new'
@@ -363,6 +383,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedCallsIdRoute: typeof AuthenticatedCallsIdRouteWithChildren
   AuthenticatedCallsNewRoute: typeof AuthenticatedCallsNewRoute
+  AuthenticatedZoomConnectRoute: typeof AuthenticatedZoomConnectRoute
   AuthenticatedCallsIndexRoute: typeof AuthenticatedCallsIndexRoute
 }
 
@@ -373,6 +394,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedCallsIdRoute: AuthenticatedCallsIdRouteWithChildren,
   AuthenticatedCallsNewRoute: AuthenticatedCallsNewRoute,
+  AuthenticatedZoomConnectRoute: AuthenticatedZoomConnectRoute,
   AuthenticatedCallsIndexRoute: AuthenticatedCallsIndexRoute,
 }
 
