@@ -20,6 +20,8 @@ const callBriefSchema = z.object({
   authority_status: z.string().max(100).optional().nullable(),
   budget_status: z.string().max(100).optional().nullable(),
   notes: z.string().max(4000).optional().nullable(),
+  zoom_meeting_link: z.string().max(500).optional().nullable(),
+  transcript_session_text: z.string().max(50000).optional().nullable(),
 });
 
 export type CallBriefInput = z.infer<typeof callBriefSchema>;
