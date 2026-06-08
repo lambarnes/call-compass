@@ -94,7 +94,7 @@ type ZoomStatus = "not_connected" | "pending" | "connected" | "error";
 function ZoomIntegrationCard() {
   const fnGet = useServerFn(getProfile);
   const fnStart = useServerFn(startZoomOAuth);
-  const { data: profile } = useSuspenseQuery(profileQ(fnGet));
+  const { data: profile = null } = useQuery({ ...profileQ(fnGet), retry: 1 });
   const [loading, setLoading] = useState(false);
 
   const status = ((profile as any)?.zoom_auth_status ?? "not_connected") as ZoomStatus;
