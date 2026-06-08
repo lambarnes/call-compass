@@ -318,7 +318,7 @@ function FieldBlock({ label, value, large = false }: { label: string; value: str
 }
 
 function CallStatusCard({ insights }: { insights: any[] }) {
-  const latest = insights[insights.length - 1];
+  const latest = latestActiveInsight(insights);
   if (!latest) {
     return (
       <Card className="p-4 border-dashed">
