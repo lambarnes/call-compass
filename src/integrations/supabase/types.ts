@@ -82,6 +82,69 @@ export type Database = {
           },
         ]
       }
+      beta_feedback: {
+        Row: {
+          accuracy_rating: number | null
+          clarity_rating: number | null
+          comments: string | null
+          company: string | null
+          confusing_parts: string | null
+          created_at: string
+          email: string | null
+          id: string
+          least_useful_button: string | null
+          missing_features: string | null
+          most_useful_button: string | null
+          name: string | null
+          role: string | null
+          scenario_tested: string | null
+          usefulness_rating: number | null
+          user_id: string | null
+          would_pay: string | null
+          would_use_again: string | null
+        }
+        Insert: {
+          accuracy_rating?: number | null
+          clarity_rating?: number | null
+          comments?: string | null
+          company?: string | null
+          confusing_parts?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          least_useful_button?: string | null
+          missing_features?: string | null
+          most_useful_button?: string | null
+          name?: string | null
+          role?: string | null
+          scenario_tested?: string | null
+          usefulness_rating?: number | null
+          user_id?: string | null
+          would_pay?: string | null
+          would_use_again?: string | null
+        }
+        Update: {
+          accuracy_rating?: number | null
+          clarity_rating?: number | null
+          comments?: string | null
+          company?: string | null
+          confusing_parts?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          least_useful_button?: string | null
+          missing_features?: string | null
+          most_useful_button?: string | null
+          name?: string | null
+          role?: string | null
+          scenario_tested?: string | null
+          usefulness_rating?: number | null
+          user_id?: string | null
+          would_pay?: string | null
+          would_use_again?: string | null
+        }
+        Relationships: []
+      }
       calls: {
         Row: {
           authority_status: string | null
@@ -107,6 +170,7 @@ export type Database = {
           updated_at: string
           user_id: string
           what_i_need_to_learn: string | null
+          zoom_meeting_link: string | null
         }
         Insert: {
           authority_status?: string | null
@@ -132,6 +196,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           what_i_need_to_learn?: string | null
+          zoom_meeting_link?: string | null
         }
         Update: {
           authority_status?: string | null
@@ -157,6 +222,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           what_i_need_to_learn?: string | null
+          zoom_meeting_link?: string | null
         }
         Relationships: []
       }
