@@ -19,6 +19,7 @@ import { Route as AuthenticatedSamplesRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCallsIndexRouteImport } from './routes/_authenticated/calls.index'
+import { Route as ApiPublicLiveCaptionRouteImport } from './routes/api/public/live-caption'
 import { Route as AuthenticatedZoomConnectRouteImport } from './routes/_authenticated/zoom.connect'
 import { Route as AuthenticatedCallsNewRouteImport } from './routes/_authenticated/calls.new'
 import { Route as AuthenticatedCallsIdRouteImport } from './routes/_authenticated/calls.$id'
@@ -76,6 +77,11 @@ const AuthenticatedCallsIndexRoute = AuthenticatedCallsIndexRouteImport.update({
   path: '/calls/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicLiveCaptionRoute = ApiPublicLiveCaptionRouteImport.update({
+  id: '/api/public/live-caption',
+  path: '/api/public/live-caption',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedZoomConnectRoute =
   AuthenticatedZoomConnectRouteImport.update({
     id: '/zoom/connect',
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/calls/$id': typeof AuthenticatedCallsIdRouteWithChildren
   '/calls/new': typeof AuthenticatedCallsNewRoute
   '/zoom/connect': typeof AuthenticatedZoomConnectRoute
+  '/api/public/live-caption': typeof ApiPublicLiveCaptionRoute
   '/calls/': typeof AuthenticatedCallsIndexRoute
   '/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
   '/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/calls/new': typeof AuthenticatedCallsNewRoute
   '/zoom/connect': typeof AuthenticatedZoomConnectRoute
+  '/api/public/live-caption': typeof ApiPublicLiveCaptionRoute
   '/calls': typeof AuthenticatedCallsIndexRoute
   '/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
   '/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/_authenticated/calls/$id': typeof AuthenticatedCallsIdRouteWithChildren
   '/_authenticated/calls/new': typeof AuthenticatedCallsNewRoute
   '/_authenticated/zoom/connect': typeof AuthenticatedZoomConnectRoute
+  '/api/public/live-caption': typeof ApiPublicLiveCaptionRoute
   '/_authenticated/calls/': typeof AuthenticatedCallsIndexRoute
   '/_authenticated/calls/$id/live': typeof AuthenticatedCallsIdLiveRoute
   '/_authenticated/calls/$id/summary': typeof AuthenticatedCallsIdSummaryRoute
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
     | '/calls/$id'
     | '/calls/new'
     | '/zoom/connect'
+    | '/api/public/live-caption'
     | '/calls/'
     | '/calls/$id/live'
     | '/calls/$id/summary'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/calls/new'
     | '/zoom/connect'
+    | '/api/public/live-caption'
     | '/calls'
     | '/calls/$id/live'
     | '/calls/$id/summary'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/_authenticated/calls/$id'
     | '/_authenticated/calls/new'
     | '/_authenticated/zoom/connect'
+    | '/api/public/live-caption'
     | '/_authenticated/calls/'
     | '/_authenticated/calls/$id/live'
     | '/_authenticated/calls/$id/summary'
@@ -234,6 +246,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BetaRoute: typeof BetaRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicLiveCaptionRoute: typeof ApiPublicLiveCaptionRoute
   ApiPublicZoomCallbackRoute: typeof ApiPublicZoomCallbackRoute
 }
 
@@ -308,6 +321,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/calls/'
       preLoaderRoute: typeof AuthenticatedCallsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/live-caption': {
+      id: '/api/public/live-caption'
+      path: '/api/public/live-caption'
+      fullPath: '/api/public/live-caption'
+      preLoaderRoute: typeof ApiPublicLiveCaptionRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/zoom/connect': {
       id: '/_authenticated/zoom/connect'
@@ -407,8 +427,19 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BetaRoute: BetaRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicLiveCaptionRoute: ApiPublicLiveCaptionRoute,
   ApiPublicZoomCallbackRoute: ApiPublicZoomCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
