@@ -16,6 +16,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSamplesRouteImport } from './routes/_authenticated/samples'
+import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCallsIndexRouteImport } from './routes/_authenticated/calls.index'
 import { Route as AuthenticatedCallsNewRouteImport } from './routes/_authenticated/calls.new'
@@ -56,6 +57,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
 const AuthenticatedSamplesRoute = AuthenticatedSamplesRouteImport.update({
   id: '/samples',
   path: '/samples',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFeedbackRoute = AuthenticatedFeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/beta': typeof BetaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
   '/samples': typeof AuthenticatedSamplesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/calls/$id': typeof AuthenticatedCallsIdRouteWithChildren
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/beta': typeof BetaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
   '/samples': typeof AuthenticatedSamplesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/calls/new': typeof AuthenticatedCallsNewRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/beta': typeof BetaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
   '/_authenticated/samples': typeof AuthenticatedSamplesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/calls/$id': typeof AuthenticatedCallsIdRouteWithChildren
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/beta'
     | '/reset-password'
     | '/dashboard'
+    | '/feedback'
     | '/samples'
     | '/settings'
     | '/calls/$id'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/beta'
     | '/reset-password'
     | '/dashboard'
+    | '/feedback'
     | '/samples'
     | '/settings'
     | '/calls/new'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/beta'
     | '/reset-password'
     | '/_authenticated/dashboard'
+    | '/_authenticated/feedback'
     | '/_authenticated/samples'
     | '/_authenticated/settings'
     | '/_authenticated/calls/$id'
@@ -248,6 +260,13 @@ declare module '@tanstack/react-router' {
       path: '/samples'
       fullPath: '/samples'
       preLoaderRoute: typeof AuthenticatedSamplesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/feedback': {
+      id: '/_authenticated/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof AuthenticatedFeedbackRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -319,6 +338,7 @@ const AuthenticatedCallsIdRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
   AuthenticatedSamplesRoute: typeof AuthenticatedSamplesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedCallsIdRoute: typeof AuthenticatedCallsIdRouteWithChildren
@@ -328,6 +348,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
   AuthenticatedSamplesRoute: AuthenticatedSamplesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedCallsIdRoute: AuthenticatedCallsIdRouteWithChildren,
