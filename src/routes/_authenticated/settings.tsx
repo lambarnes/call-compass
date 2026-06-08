@@ -3,6 +3,7 @@ import { useSuspenseQuery, queryOptions, useQueryClient } from "@tanstack/react-
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { getProfile, updateProfile } from "@/lib/calls.functions";
+import { startZoomOAuth } from "@/lib/zoom.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -90,7 +91,9 @@ type ZoomStatus = "not_connected" | "pending" | "connected" | "error";
 
 function ZoomIntegrationCard() {
   const fnGet = useServerFn(getProfile);
+  const fnStart = useServerFn(startZoomOAuth);
   const { data: profile } = useSuspenseQuery(profileQ(fnGet));
+  const [loading, setLoading] = useState(false);
 
   const status = ((profile as any)?.zoom_auth_status ?? "not_connected") as ZoomStatus;
   const connectedAt = (profile as any)?.zoom_auth_connected_at as string | null | undefined;
@@ -107,6 +110,17 @@ function ZoomIntegrationCard() {
       <Badge variant="outline" className="text-muted-foreground">Not Connected</Badge>
     );
 
+  async function connect() {
+    setLoading(true);
+    try {
+      const { url } = await fnStart();
+      window.location.href = url;
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to start Zoom OAuth");
+      setLoading(false);
+    }
+  }
+
   return (
     <Card className="p-6 space-y-4">
       <div className="flex items-center justify-between gap-3">
@@ -117,7 +131,7 @@ function ZoomIntegrationCard() {
         {statusBadge}
       </div>
       <p className="text-sm text-muted-foreground">
-        Connect your Zoom account to stream live meeting transcripts straight into the Radar. Coming soon — the UI is in place while the integration is being built.
+        Authorize Call Compass to identify your Zoom account. Phase 1 only captures your Zoom email — no meeting data is read yet.
       </p>
       {status === "connected" && (email || connectedAt) && (
         <div className="text-xs text-muted-foreground space-y-0.5">
@@ -134,14 +148,9 @@ function ZoomIntegrationCard() {
         </ol>
       </div>
       <div className="flex items-center justify-between gap-3">
-        <span className="text-xs text-muted-foreground">No data is sent to Zoom yet.</span>
-        <Button
-          variant="outline"
-          onClick={() =>
-            toast.info("Zoom authorization is not enabled yet. This beta uses manual transcript mode.")
-          }
-        >
-          <Video className="h-4 w-4" /> Connect Zoom
+        <span className="text-xs text-muted-foreground">Manual transcript mode still works without Zoom.</span>
+        <Button variant="outline" onClick={connect} disabled={loading}>
+          <Video className="h-4 w-4" /> {status === "connected" ? (loading ? "Redirecting…" : "Reconnect Zoom") : (loading ? "Redirecting…" : "Connect Zoom")}
         </Button>
       </div>
     </Card>
