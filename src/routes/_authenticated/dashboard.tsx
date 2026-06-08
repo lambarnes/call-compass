@@ -6,7 +6,7 @@ import { listCalls, getProfile } from "@/lib/calls.functions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, Radar, FileText, Clock, Library, MessageSquare, Video, X, CheckCircle2 } from "lucide-react";
+import { PlusCircle, Radar, FileText, Clock, Library, MessageSquare, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 const callsQueryOptions = (fetchFn: any) =>
