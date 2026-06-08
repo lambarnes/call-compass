@@ -45,6 +45,15 @@ const ACTION_GROUPS: { label: string; actions: string[] }[] = [
   { label: "Control", actions: ["Am I moving too fast?", "What should I avoid saying?"] },
 ];
 
+const LEGACY_ACTION_LABELS = new Set(["Analyze Current Moment"]);
+const isLegacyInsight = (i: any) => LEGACY_ACTION_LABELS.has(i?.action_button);
+const latestActiveInsight = (insights: any[]) => {
+  for (let i = insights.length - 1; i >= 0; i--) {
+    if (!isLegacyInsight(insights[i])) return insights[i];
+  }
+  return null;
+};
+
 function stageLabel(r: string) {
   if (r === "red") return "Red";
   if (r === "yellow") return "Yellow";
