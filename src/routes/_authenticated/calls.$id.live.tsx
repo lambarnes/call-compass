@@ -48,7 +48,8 @@ const ACTION_GROUPS: { label: string; actions: string[] }[] = [
 const LEGACY_ACTION_LABELS = new Set(["Analyze Current Moment"]);
 const isLegacyInsight = (i: any) => LEGACY_ACTION_LABELS.has(i?.action_button);
 const latestActiveInsight = (insights: any[]) => {
-  for (let i = insights.length - 1; i >= 0; i--) {
+  // listLiveInsights returns rows ordered DESC by sequence_number (newest first).
+  for (let i = 0; i < insights.length; i++) {
     if (!isLegacyInsight(insights[i])) return insights[i];
   }
   return null;
