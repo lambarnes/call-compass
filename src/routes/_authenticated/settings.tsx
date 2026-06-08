@@ -18,7 +18,9 @@ const profileQ = (fn: any) =>
   queryOptions({ queryKey: ["profile"], queryFn: () => fn() });
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  loader: async ({ context }) => { await context.queryClient.ensureQueryData(profileQ(getProfile)); },
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(profileQ(getProfile)).catch(() => null);
+  },
   component: Settings,
 });
 
